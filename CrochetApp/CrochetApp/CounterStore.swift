@@ -41,6 +41,10 @@ class CounterStore: ObservableObject {
 
     func incrementStitch() {
         stitchCount += 1
+        if let goal = library?.activeEntry?.stitchGoal, goal > 0, stitchCount >= goal {
+            rowCount += 1
+            stitchCount = 0
+        }
         sync()
     }
 
