@@ -66,6 +66,7 @@ class PatternLibrary: ObservableObject {
         entries[i].rowCount = row
         entries[i].stitchCount = stitch
         entries[i].autoResetStitch = autoReset
+        save()
     }
 
     func remove(entryID: UUID) {
@@ -91,6 +92,10 @@ class PatternLibrary: ObservableObject {
         guard let data = try? Data(contentsOf: storageURL),
               let decoded = try? JSONDecoder().decode([PatternEntry].self, from: data) else { return }
         entries = decoded
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     @objc private func appWillTerminate() {
