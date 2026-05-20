@@ -17,6 +17,7 @@
 		DD1111111111111111111111 /* PatternLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2222222222222222222222 /* PatternLibraryView.swift */; };
 		EE3333333333333333333333 /* CounterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4444444444444444444444 /* CounterBarView.swift */; };
 		FF5555555555555555555555 /* SessionTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6666666666666666666666 /* SessionTimer.swift */; };
+		GG7777777777777777777777 /* AnnotationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG8888888888888888888888 /* AnnotationBridge.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		DD2222222222222222222222 /* PatternLibraryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternLibraryView.swift; sourceTree = "<group>"; };
 		EE4444444444444444444444 /* CounterBarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CounterBarView.swift; sourceTree = "<group>"; };
 		FF6666666666666666666666 /* SessionTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTimer.swift; sourceTree = "<group>"; };
+		GG8888888888888888888888 /* AnnotationBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnotationBridge.swift; sourceTree = "<group>"; };
 		AA00000100000000000000AB /* CrochetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrochetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -58,6 +60,7 @@
 				DD2222222222222222222222 /* PatternLibraryView.swift */,
 				EE4444444444444444444444 /* CounterBarView.swift */,
 				FF6666666666666666666666 /* SessionTimer.swift */,
+				GG8888888888888888888888 /* AnnotationBridge.swift */,
 				AA000001000000000000006B /* Assets.xcassets */,
 				AA000001000000000000007B /* Info.plist */,
 				AA000001000000000000008B /* CrochetApp.entitlements */,
@@ -159,6 +162,7 @@
 				DD1111111111111111111111 /* PatternLibraryView.swift in Sources */,
 				EE3333333333333333333333 /* CounterBarView.swift in Sources */,
 				FF5555555555555555555555 /* SessionTimer.swift in Sources */,
+				GG7777777777777777777777 /* AnnotationBridge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

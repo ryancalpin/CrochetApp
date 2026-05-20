@@ -30,6 +30,14 @@ class CounterStore: ObservableObject {
         sync()
     }
 
+    /// Ends the current row: increments row and always resets stitch,
+    /// regardless of the autoResetStitch preference.
+    func endRow() {
+        rowCount += 1
+        stitchCount = 0
+        sync()
+    }
+
     func decrementRow() {
         guard rowCount > 0 else { return }
         rowCount -= 1

@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @ObservedObject var library: PatternLibrary
     @ObservedObject var store: CounterStore
+    @ObservedObject var sessionTimer: SessionTimer
 
     var body: some View {
         NavigationSplitView {
@@ -11,16 +12,25 @@ struct ContentView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             VStack(spacing: 0) {
-                // Sticky counter bar — always visible
-                CounterBarView(store: store)
-
-                // Scrollable markdown viewer
-                MarkdownView(fileURL: activeFileURL)
+                CounterBarView(store: store, timer: sessionTimer, entry: activeEntryBinding)
+                MarkdownView(fileURL: activeFileURL, library: library)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .navigationTitle(library.activeEntry?.displayName ?? "Crochet Helper")
         .background(KeyboardShortcutHandler(store: store))
+    }
+
+    private var activeEntryBinding: Binding<PatternEntry?> {
+        Binding(
+            get: { library.activeEntry },
+            set: { newEntry in
+                guard let e = newEntry,
+                      let i = library.entries.firstIndex(where: { $0.id == e.id }) else { return }
+                library.entries[i] = e
+                library.save()
+            }
+        )
     }
 
     private var activeFileURL: URL? {
@@ -67,6 +77,8 @@ class KeyHandlerView: NSView {
         case 125: store.decrementRow()
         case 124: store.incrementStitch()
         case 123: store.decrementStitch()
+        case 49: store.incrementStitch()   // Space
+        case 36: store.endRow()            // Return — always resets stitch
         default:
             switch event.charactersIgnoringModifiers {
             case "R": store.incrementRow()
@@ -80,6 +92,9 @@ class KeyHandlerView: NSView {
 }
 
 #Preview {
-    ContentView(library: PatternLibrary(), store: CounterStore())
+    let library = PatternLibrary()
+    let store = CounterStore()
+    store.library = library
+    return ContentView(library: library, store: store, sessionTimer: SessionTimer())
         .frame(width: 960, height: 650)
 }

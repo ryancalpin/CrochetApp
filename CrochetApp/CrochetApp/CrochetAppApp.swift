@@ -4,10 +4,11 @@ import SwiftUI
 struct CrochetAppApp: App {
     @StateObject private var library = PatternLibrary()
     @StateObject private var store = CounterStore()
+    @StateObject private var sessionTimer = SessionTimer()
 
     var body: some Scene {
         WindowGroup {
-            ContentView(library: library, store: store)
+            ContentView(library: library, store: store, sessionTimer: sessionTimer)
                 .frame(minWidth: 700, minHeight: 500)
                 .onAppear {
                     store.library = library

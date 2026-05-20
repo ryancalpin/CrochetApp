@@ -326,26 +326,160 @@ struct MarkdownConverter {
 // MARK: - WKWebView Wrapper
 struct MarkdownWebView: NSViewRepresentable {
     let htmlContent: String
+    let annotations: [Int: String]
+    let bridge: AnnotationBridge
 
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
+        config.userContentController.add(bridge, name: "AnnotationBridge")
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.setValue(false, forKey: "drawsBackground")
+        webView.navigationDelegate = context.coordinator
         return webView
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
+        context.coordinator.pendingAnnotations = annotations
         webView.loadHTMLString(htmlContent, baseURL: nil)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(annotations: annotations)
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        var pendingAnnotations: [Int: String]
+
+        init(annotations: [Int: String]) {
+            self.pendingAnnotations = annotations
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            injectAnnotationJS(into: webView, annotations: pendingAnnotations)
+        }
+
+        private func injectAnnotationJS(into webView: WKWebView, annotations: [Int: String]) {
+            var stringKeyed: [String: String] = [:]
+            for (k, v) in annotations { stringKeyed["\(k)"] = v }
+            let annotationsJSON: String
+            if let data = try? JSONSerialization.data(withJSONObject: stringKeyed),
+               let str = String(data: data, encoding: .utf8) {
+                annotationsJSON = str
+            } else {
+                annotationsJSON = "{}"
+            }
+
+            let js = """
+            (function() {
+              var AMBER = '#e8b84b';
+              var existingNotes = \(annotationsJSON);
+              var blocks = Array.from(document.querySelectorAll('p, li'));
+
+              blocks.forEach(function(block, idx) {
+                var key = String(idx);
+                if (existingNotes[key]) {
+                  insertNoteElement(block, idx, existingNotes[key]);
+                }
+              });
+
+              blocks.forEach(function(block, idx) {
+                block.addEventListener('dblclick', function(e) {
+                  e.stopPropagation();
+                  openEditor(block, idx);
+                });
+              });
+
+              function noteId(idx) { return 'ann-note-' + idx; }
+              function editorId(idx) { return 'ann-editor-' + idx; }
+
+              function insertNoteElement(block, idx, text) {
+                var existing = document.getElementById(noteId(idx));
+                if (existing) { existing.remove(); }
+                var div = document.createElement('div');
+                div.id = noteId(idx);
+                div.style.cssText = 'border-left:2px solid '+AMBER+';padding-left:10px;margin:4px 0 8px 0;font-style:italic;color:#999;font-size:11px;cursor:pointer';
+                div.textContent = text;
+                div.addEventListener('click', function(e) {
+                  e.stopPropagation();
+                  openEditor(block, idx, text);
+                });
+                block.insertAdjacentElement('afterend', div);
+              }
+
+              function openEditor(block, idx, existingText) {
+                document.querySelectorAll('[id^="ann-editor-"]').forEach(function(el) { el.remove(); });
+                var container = document.createElement('div');
+                container.id = editorId(idx);
+                container.style.cssText = 'border-left:2px solid '+AMBER+';padding-left:10px;margin:4px 0 8px 0;display:flex;align-items:center;gap:8px';
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.value = existingText || '';
+                input.placeholder = 'Add a note…';
+                input.style.cssText = 'flex:1;border:none;border-bottom:1px solid '+AMBER+';background:transparent;font-style:italic;color:#999;font-size:11px;outline:none;padding:2px 0';
+                input.addEventListener('keydown', function(e) {
+                  if (e.key === 'Enter') { e.preventDefault(); saveNote(idx, input.value, container); }
+                  else if (e.key === 'Escape') { container.remove(); }
+                });
+                container.appendChild(input);
+                if (existingText) {
+                  var del = document.createElement('a');
+                  del.textContent = 'Delete';
+                  del.href = '#';
+                  del.style.cssText = 'color:#999;font-size:10px;text-decoration:none';
+                  del.addEventListener('click', function(e) { e.preventDefault(); deleteNote(idx, container); });
+                  container.appendChild(del);
+                }
+                block.insertAdjacentElement('afterend', container);
+                input.focus();
+              }
+
+              function saveNote(idx, text, container) {
+                container.remove();
+                var noteEl = document.getElementById(noteId(idx));
+                if (noteEl) { noteEl.remove(); }
+                if (text.trim()) {
+                  insertNoteElement(blocks[idx], idx, text.trim());
+                  window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'save',index:idx,text:text.trim()});
+                } else {
+                  window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'delete',index:idx,text:''});
+                }
+              }
+
+              function deleteNote(idx, container) {
+                container.remove();
+                var noteEl = document.getElementById(noteId(idx));
+                if (noteEl) { noteEl.remove(); }
+                window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'delete',index:idx,text:''});
+              }
+            })();
+            """
+
+            webView.evaluateJavaScript(js) { _, error in
+                if let error = error {
+                    print("[AnnotationJS] \(error)")
+                }
+            }
+        }
     }
 }
 
 // MARK: - Markdown View
 struct MarkdownView: View {
     let fileURL: URL?
+    @ObservedObject var library: PatternLibrary
+
     @State private var markdownContent: String = ""
     @State private var htmlContent: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
+
+    private let bridge: AnnotationBridge
+
+    init(fileURL: URL?, library: PatternLibrary) {
+        self.fileURL = fileURL
+        self.library = library
+        self.bridge = AnnotationBridge(library: library)
+    }
 
     var body: some View {
         ZStack {
@@ -369,7 +503,11 @@ struct MarkdownView: View {
                 ProgressView("Loading pattern…")
                     .progressViewStyle(CircularProgressViewStyle())
             } else {
-                MarkdownWebView(htmlContent: htmlContent)
+                MarkdownWebView(
+                    htmlContent: htmlContent,
+                    annotations: library.activeEntry?.annotations ?? [:],
+                    bridge: bridge
+                )
             }
         }
         .onChange(of: fileURL) { newURL in
