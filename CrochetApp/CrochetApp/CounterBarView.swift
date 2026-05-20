@@ -8,6 +8,7 @@ struct CounterBarView: View {
     @ObservedObject var timer: SessionTimer
     /// The active PatternEntry. Passed in so this view can read/write rowGoal, stitchGoal.
     @Binding var entry: PatternEntry?
+    @Binding var showAIPanel: Bool
 
     // MARK: - Local state for goal popovers
 
@@ -81,6 +82,28 @@ struct CounterBarView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("Row and Stitch counts will be set to 0.")
+            }
+
+            // ── AI panel toggle — macOS 26+ only ─────────────────────
+            if #available(macOS 26.0, *) {
+                Divider().frame(height: 32)
+                Button {
+                    showAIPanel.toggle()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 13, weight: .semibold))
+                        Text("AI")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundColor(showAIPanel ? .purple : .secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(showAIPanel ? Color.purple.opacity(0.12) : Color.clear)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                .buttonStyle(.plain)
+                .help(showAIPanel ? "Close AI panel" : "Open AI panel")
             }
         }
         .padding(.horizontal, 14)

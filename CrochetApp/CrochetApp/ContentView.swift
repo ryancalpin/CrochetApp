@@ -6,19 +6,41 @@ struct ContentView: View {
     @ObservedObject var store: CounterStore
     @ObservedObject var sessionTimer: SessionTimer
 
+    @State private var showAIPanel: Bool = UserDefaults.standard.aiPanelOpen
+
     var body: some View {
         NavigationSplitView {
             PatternLibraryView(library: library, store: store)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             VStack(spacing: 0) {
-                CounterBarView(store: store, timer: sessionTimer, entry: activeEntryBinding)
-                MarkdownView(fileURL: activeFileURL, library: library)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                CounterBarView(
+                    store: store,
+                    timer: sessionTimer,
+                    entry: activeEntryBinding,
+                    showAIPanel: $showAIPanel
+                )
+
+                HStack(spacing: 0) {
+                    MarkdownView(fileURL: activeFileURL, library: library)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    if showAIPanel, let entry = library.activeEntry, let text = loadedPatternText {
+                        if #available(macOS 26.0, *) {
+                            Divider()
+                            AIPanelView(entry: entry, patternText: text, showAIPanel: $showAIPanel)
+                                .transition(.move(edge: .trailing))
+                        }
+                    }
+                }
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showAIPanel)
             }
         }
         .navigationTitle(library.activeEntry?.displayName ?? "Crochet Helper")
         .background(KeyboardShortcutHandler(store: store))
+        .onChange(of: showAIPanel) { newValue in
+            UserDefaults.standard.aiPanelOpen = newValue
+        }
     }
 
     private var activeEntryBinding: Binding<PatternEntry?> {
@@ -38,6 +60,11 @@ struct ContentView: View {
         let url = entry.resolveURL()
         url?.startAccessingSecurityScopedResource()
         return url
+    }
+
+    private var loadedPatternText: String? {
+        guard let url = activeFileURL else { return nil }
+        return try? String(contentsOf: url, encoding: .utf8)
     }
 }
 

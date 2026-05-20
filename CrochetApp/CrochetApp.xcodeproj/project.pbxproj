@@ -18,6 +18,11 @@
 		EE3333333333333333333333 /* CounterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4444444444444444444444 /* CounterBarView.swift */; };
 		FF5555555555555555555555 /* SessionTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6666666666666666666666 /* SessionTimer.swift */; };
 		GG7777777777777777777777 /* AnnotationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG8888888888888888888888 /* AnnotationBridge.swift */; };
+		HH1111111111111111111111 /* UserDefaults+CrochetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */; };
+		II3333333333333333333333 /* PatternAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = II4444444444444444444444 /* PatternAIService.swift */; };
+		JJ5555555555555555555555 /* AIFeatureSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = JJ6666666666666666666666 /* AIFeatureSection.swift */; };
+		KK7777777777777777777777 /* PatternQAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = KK8888888888888888888888 /* PatternQAView.swift */; };
+		LL9999999999999999999999 /* AIPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +39,11 @@
 		EE4444444444444444444444 /* CounterBarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CounterBarView.swift; sourceTree = "<group>"; };
 		FF6666666666666666666666 /* SessionTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTimer.swift; sourceTree = "<group>"; };
 		GG8888888888888888888888 /* AnnotationBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnotationBridge.swift; sourceTree = "<group>"; };
+		HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDefaults+CrochetApp.swift"; sourceTree = "<group>"; };
+		II4444444444444444444444 /* PatternAIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternAIService.swift; sourceTree = "<group>"; };
+		JJ6666666666666666666666 /* AIFeatureSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIFeatureSection.swift; sourceTree = "<group>"; };
+		KK8888888888888888888888 /* PatternQAView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternQAView.swift; sourceTree = "<group>"; };
+		LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIPanelView.swift; sourceTree = "<group>"; };
 		AA00000100000000000000AB /* CrochetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrochetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -61,6 +71,11 @@
 				EE4444444444444444444444 /* CounterBarView.swift */,
 				FF6666666666666666666666 /* SessionTimer.swift */,
 				GG8888888888888888888888 /* AnnotationBridge.swift */,
+				HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */,
+				II4444444444444444444444 /* PatternAIService.swift */,
+				JJ6666666666666666666666 /* AIFeatureSection.swift */,
+				KK8888888888888888888888 /* PatternQAView.swift */,
+				LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */,
 				AA000001000000000000006B /* Assets.xcassets */,
 				AA000001000000000000007B /* Info.plist */,
 				AA000001000000000000008B /* CrochetApp.entitlements */,
@@ -163,6 +178,11 @@
 				EE3333333333333333333333 /* CounterBarView.swift in Sources */,
 				FF5555555555555555555555 /* SessionTimer.swift in Sources */,
 				GG7777777777777777777777 /* AnnotationBridge.swift in Sources */,
+				HH1111111111111111111111 /* UserDefaults+CrochetApp.swift in Sources */,
+				II3333333333333333333333 /* PatternAIService.swift in Sources */,
+				JJ5555555555555555555555 /* AIFeatureSection.swift in Sources */,
+				KK7777777777777777777777 /* PatternQAView.swift in Sources */,
+				LL9999999999999999999999 /* AIPanelView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
