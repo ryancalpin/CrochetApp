@@ -22,11 +22,12 @@ struct PatternEntry: Codable, Identifiable {
     init(url: URL) throws {
         self.id = UUID()
         self.displayName = url.deletingPathExtension().lastPathComponent
-        self.bookmark = try url.bookmarkData(
-            options: .withSecurityScope,
-            includingResourceValuesForKeys: nil,
-            relativeTo: nil
-        )
+        // Prefer security-scoped bookmark (sandboxed builds); fall back to minimal (dev/unsigned builds).
+        if let data = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
+            self.bookmark = data
+        } else {
+            self.bookmark = try url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil)
+        }
         self.lastOpened = Date()
         self.isPinned = false
         self.rowCount = 0
@@ -37,17 +38,11 @@ struct PatternEntry: Codable, Identifiable {
         self.annotations = [:]
     }
 
-    /// Returns a security-scoped URL for the bookmarked file.
-    /// Caller must call `url.startAccessingSecurityScopedResource()` before any file I/O
-    /// and `url.stopAccessingSecurityScopedResource()` when done.
     func resolveURL() -> URL? {
         var isStale = false
-        guard let url = try? URL(
-            resolvingBookmarkData: bookmark,
-            options: .withSecurityScope,
-            relativeTo: nil,
-            bookmarkDataIsStale: &isStale
-        ) else { return nil }
-        return url
+        if let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) {
+            return url
+        }
+        return try? URL(resolvingBookmarkData: bookmark, options: [], relativeTo: nil, bookmarkDataIsStale: &isStale)
     }
 }

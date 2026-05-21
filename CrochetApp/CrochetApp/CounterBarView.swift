@@ -295,8 +295,8 @@ struct CounterBarView: View {
 
     // MARK: - Colors
 
-    private var rowColor: Color { Color(red: 0.71, green: 0.33, blue: 0.49) }
-    private var stitchColor: Color { Color(red: 0.49, green: 0.30, blue: 0.80) }
+    private var rowColor: Color { settings.pillColorScheme.rowColor }
+    private var stitchColor: Color { settings.pillColorScheme.stitchColor }
 }
 
 // MARK: - GoalInputPopover

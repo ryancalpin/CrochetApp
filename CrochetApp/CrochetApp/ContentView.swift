@@ -22,7 +22,7 @@ struct ContentView: View {
                 )
 
                 HStack(spacing: 0) {
-                    MarkdownView(fileURL: activeFileURL, library: library)
+                    PatternContentView(fileURL: activeFileURL, library: library)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                     if showAIPanel, let entry = library.activeEntry, let text = loadedPatternText {

@@ -5,16 +5,16 @@ struct SettingsView: View {
 
     var body: some View {
         TabView {
-            countingTab
+            ScrollView { countingTab.padding(.bottom, 16) }
                 .tabItem { Label("Counting", systemImage: "list.number") }
-            paceTab
+            ScrollView { paceTab.padding(.bottom, 16) }
                 .tabItem { Label("Pace & AI", systemImage: "sparkles") }
-            appearanceTab
+            ScrollView { appearanceTab.padding(.bottom, 16) }
                 .tabItem { Label("Appearance", systemImage: "paintbrush") }
-            shortcutsTab
+            ScrollView { shortcutsTab.padding(.bottom, 16) }
                 .tabItem { Label("Shortcuts", systemImage: "keyboard") }
         }
-        .frame(width: 400, height: 300)
+        .frame(width: 520, height: 400)
     }
 
     // MARK: - Counting
@@ -31,7 +31,7 @@ struct SettingsView: View {
                     Spacer()
                     TextField("None", value: $settings.defaultRowGoal, format: .number)
                         .multilineTextAlignment(.trailing)
-                        .frame(width: 64)
+                        .frame(width: 72)
                         .textFieldStyle(.roundedBorder)
                 }
                 HStack {
@@ -39,9 +39,12 @@ struct SettingsView: View {
                     Spacer()
                     TextField("None", value: $settings.defaultStitchGoal, format: .number)
                         .multilineTextAlignment(.trailing)
-                        .frame(width: 64)
+                        .frame(width: 72)
                         .textFieldStyle(.roundedBorder)
                 }
+                Text("These are applied when adding a new pattern. You can override them per-pattern via right-click on a counter.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
         .formStyle(.grouped)
@@ -55,10 +58,10 @@ struct SettingsView: View {
                 HStack {
                     Text("Rows per hour")
                     Spacer()
-                    Stepper("\(settings.rowsPerHour)", value: $settings.rowsPerHour, in: 1...300)
+                    Stepper("\(settings.rowsPerHour) rows/hr", value: $settings.rowsPerHour, in: 1...300)
                         .fixedSize()
                 }
-                Text("Used by the AI panel to estimate how long your project will take. Adjust based on your typical pace for the stitch complexity.")
+                Text("Used by the AI panel to estimate how long your project will take. Adjust based on your typical pace for the current stitch complexity.")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -70,8 +73,8 @@ struct SettingsView: View {
 
     private var appearanceTab: some View {
         Form {
-            Section("Counter Display") {
-                Picker("Counter size", selection: Binding(
+            Section("Counter Display Size") {
+                Picker("Size", selection: Binding(
                     get: { settings.counterSize },
                     set: { settings.counterSize = $0 }
                 )) {
@@ -81,8 +84,46 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.segmented)
             }
+
+            Section("Color Scheme") {
+                HStack(spacing: 10) {
+                    ForEach(AppSettings.PillColorScheme.allCases, id: \.self) { scheme in
+                        colorSwatch(scheme)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
         }
         .formStyle(.grouped)
+    }
+
+    private func colorSwatch(_ scheme: AppSettings.PillColorScheme) -> some View {
+        let isSelected = settings.pillColorScheme == scheme
+        return Button {
+            settings.pillColorScheme = scheme
+        } label: {
+            VStack(spacing: 5) {
+                HStack(spacing: 3) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(scheme.rowColor)
+                        .frame(width: 24, height: 24)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(scheme.stitchColor)
+                        .frame(width: 24, height: 24)
+                }
+                Text(scheme.label)
+                    .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(isSelected ? .primary : .secondary)
+            }
+            .padding(7)
+            .background(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Shortcuts

@@ -6,6 +6,8 @@ struct PatternLibraryView: View {
     @ObservedObject var store: CounterStore
     @State private var showFilePicker = false
     @State private var entryToRemove: PatternEntry? = nil
+    @State private var importError: String? = nil
+    @State private var isDragTargeted = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -63,16 +65,59 @@ struct PatternLibraryView: View {
         .fileImporter(
             isPresented: $showFilePicker,
             allowedContentTypes: [
-                UTType.text,
+                .pdf,
+                .text,
                 UTType(filenameExtension: "md") ?? .text,
-                UTType(filenameExtension: "markdown") ?? .text
+                UTType(filenameExtension: "markdown") ?? .text,
+                .rtf,
+                .plainText
             ],
-            allowsMultipleSelection: false
+            allowsMultipleSelection: true
         ) { result in
-            if case .success(let urls) = result, let url = urls.first {
-                if let newID = library.add(url: url) {
-                    selectEntry(id: newID)
+            switch result {
+            case .success(let urls):
+                for url in urls {
+                    if let newID = library.add(url: url) {
+                        selectEntry(id: newID)
+                    } else {
+                        importError = "Could not import \"\(url.lastPathComponent)\". The file may be inaccessible."
+                    }
                 }
+            case .failure(let error):
+                importError = error.localizedDescription
+            }
+        }
+        .alert("Import Failed", isPresented: Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })) {
+            Button("OK") { importError = nil }
+        } message: {
+            Text(importError ?? "")
+        }
+        .onDrop(of: [.fileURL], isTargeted: $isDragTargeted) { providers in
+            for provider in providers {
+                _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                    guard let url else { return }
+                    DispatchQueue.main.async {
+                        if let newID = library.add(url: url) {
+                            selectEntry(id: newID)
+                        }
+                    }
+                }
+            }
+            return true
+        }
+        .overlay(alignment: .center) {
+            if isDragTargeted {
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.pink, style: StrokeStyle(lineWidth: 2, dash: [6]))
+                    .overlay(
+                        VStack(spacing: 8) {
+                            Image(systemName: "arrow.down.doc").font(.system(size: 28)).foregroundColor(.pink)
+                            Text("Drop to add pattern").font(.callout).foregroundColor(.pink)
+                        }
+                    )
+                    .background(Color.pink.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(8)
             }
         }
         .confirmationDialog(
@@ -102,7 +147,7 @@ struct PatternLibraryView: View {
             Text("No Patterns Yet")
                 .font(.headline)
                 .foregroundColor(.secondary)
-            Text("Click + to add a Markdown pattern file.")
+            Text("Click + or drag a file here.\nSupports Markdown, PDF, and plain text.")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

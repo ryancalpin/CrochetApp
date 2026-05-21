@@ -25,6 +25,7 @@
 		LL9999999999999999999999 /* AIPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */; };
 		MM1111111111111111111111 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = MM2222222222222222222222 /* AppSettings.swift */; };
 		NN3333333333333333333333 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NN4444444444444444444444 /* SettingsView.swift */; };
+		OO5555555555555555555555 /* PatternContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OO6666666666666666666666 /* PatternContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 		LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIPanelView.swift; sourceTree = "<group>"; };
 		MM2222222222222222222222 /* AppSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		NN4444444444444444444444 /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		OO6666666666666666666666 /* PatternContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternContentView.swift; sourceTree = "<group>"; };
 		AA00000100000000000000AB /* CrochetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrochetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -82,6 +84,7 @@
 				LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */,
 				MM2222222222222222222222 /* AppSettings.swift */,
 				NN4444444444444444444444 /* SettingsView.swift */,
+				OO6666666666666666666666 /* PatternContentView.swift */,
 				AA000001000000000000006B /* Assets.xcassets */,
 				AA000001000000000000007B /* Info.plist */,
 				AA000001000000000000008B /* CrochetApp.entitlements */,
@@ -191,6 +194,7 @@
 				LL9999999999999999999999 /* AIPanelView.swift in Sources */,
 				MM1111111111111111111111 /* AppSettings.swift in Sources */,
 				NN3333333333333333333333 /* SettingsView.swift in Sources */,
+				OO5555555555555555555555 /* PatternContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
