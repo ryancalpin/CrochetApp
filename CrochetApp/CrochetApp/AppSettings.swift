@@ -39,6 +39,11 @@ final class AppSettings: ObservableObject {
     /// Whether the session timer is visible in the counter bar.
     @AppStorage("crochet.showTimer") var showTimer: Bool = true
 
+    // MARK: - Audio
+
+    /// Play a subtle tick sound when incrementing a row.
+    @AppStorage("crochet.audioCueEnabled") var audioCueEnabled: Bool = false
+
     // MARK: - Pill color scheme
 
     @AppStorage("crochet.pillColorScheme") var pillColorSchemeRaw: String = PillColorScheme.classic.rawValue

@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import AppKit
 
 class CounterStore: ObservableObject {
     @Published var rowCount: Int = 0
@@ -30,6 +31,9 @@ class CounterStore: ObservableObject {
     func incrementRow() {
         rowCount += 1
         if autoReset { stitchCount = 0 }
+        if AppSettings.shared.audioCueEnabled {
+            NSSound(named: "Tink")?.play()
+        }
         sync()
     }
 

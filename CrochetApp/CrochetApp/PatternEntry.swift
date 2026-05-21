@@ -16,6 +16,9 @@ struct PatternEntry: Codable, Identifiable {
     var rowGoal: Int?
     var stitchGoal: Int?
 
+    // MARK: - Tags
+    var tags: [String]
+
     // MARK: - Annotations
     // Key: first 64 chars of block text (fingerprint) — stable across paragraph index changes
     var annotations: [String: String]
@@ -44,6 +47,7 @@ struct PatternEntry: Codable, Identifiable {
         self.showRepeatCounter = false
         self.rowGoal = nil
         self.stitchGoal = nil
+        self.tags = []
         self.annotations = [:]
         self.aiSummary = nil
         self.aiAbbreviations = nil
@@ -67,6 +71,7 @@ struct PatternEntry: Codable, Identifiable {
         showRepeatCounter = try c.decodeIfPresent(Bool.self, forKey: .showRepeatCounter) ?? false
         rowGoal = try c.decodeIfPresent(Int.self, forKey: .rowGoal)
         stitchGoal = try c.decodeIfPresent(Int.self, forKey: .stitchGoal)
+        tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
         // Annotations stored as [String: String]; old Int-keyed data decodes fine (keys were "0","1" etc.)
         annotations = try c.decodeIfPresent([String: String].self, forKey: .annotations) ?? [:]
         aiSummary = try c.decodeIfPresent(PatternSummary.self, forKey: .aiSummary)

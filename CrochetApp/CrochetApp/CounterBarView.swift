@@ -38,10 +38,12 @@ struct CounterBarView: View {
                 if compact {
                     overflowMenu
                 } else {
+                    audioCueButton
                     if settings.showTimer {
-                        timerView
                         Divider().frame(height: 30)
+                        timerView
                     }
+                    Divider().frame(height: 30)
                     resetButton
                     if #available(macOS 26.0, *) {
                         Divider().frame(height: 30)
@@ -287,8 +289,8 @@ struct CounterBarView: View {
                 .font(.system(size: 10)).foregroundColor(.secondary)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3).fill(Color.pink.opacity(0.2)).frame(height: 6)
-                    RoundedRectangle(cornerRadius: 3).fill(Color.pink)
+                    RoundedRectangle(cornerRadius: 3).fill(rowColor.opacity(0.2)).frame(height: 6)
+                    RoundedRectangle(cornerRadius: 3).fill(rowColor)
                         .frame(width: geo.size.width * fraction, height: 6)
                         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: fraction)
                 }
@@ -317,6 +319,24 @@ struct CounterBarView: View {
             Button(timer.isRunning ? "Pause" : "Resume") { timer.togglePause() }
             Button("Reset Timer") { timer.reset() }
         }
+    }
+
+    // MARK: - Audio cue button
+
+    private var audioCueButton: some View {
+        Button { settings.audioCueEnabled.toggle() } label: {
+            HStack(spacing: 4) {
+                Image(systemName: settings.audioCueEnabled ? "speaker.wave.2.fill" : "speaker.slash")
+                    .font(.system(size: 11))
+                Text("Row Cue").font(.system(size: 11))
+            }
+            .foregroundColor(settings.audioCueEnabled ? rowColor : .secondary)
+            .padding(.horizontal, 7).padding(.vertical, 4)
+            .background(settings.audioCueEnabled ? rowColor.opacity(0.12) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
+        .help(settings.audioCueEnabled ? "Row audio cue on — click to disable" : "Row audio cue off — click to enable")
     }
 
     // MARK: - Reset button
@@ -354,6 +374,8 @@ struct CounterBarView: View {
             Divider()
             Button(timer.isRunning ? "Pause Timer" : "Resume Timer") { timer.togglePause() }
             Button("Reset Timer") { timer.reset() }
+            Divider()
+            Button(settings.audioCueEnabled ? "Disable Row Cue" : "Enable Row Cue") { settings.audioCueEnabled.toggle() }
             Divider()
             Button("Reset Counters…") { showResetConfirmation = true }
             if #available(macOS 26.0, *) {

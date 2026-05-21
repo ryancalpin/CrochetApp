@@ -223,25 +223,25 @@ struct MarkdownConverter {
           :root {
             --bg: #fafaf8;
             --fg: #2c2c2e;
-            --accent: #b5557e;
-            --accent-light: #f7e8ef;
+            --accent: #7B6FA0;
+            --accent-light: #f0ecfd;
             --border: #e0e0e0;
             --code-bg: #f0f0f0;
-            --blockquote-bg: #fef3f8;
-            --link: #b5557e;
-            --h1: #6b2d4e;
+            --blockquote-bg: #f5f2fd;
+            --link: #7B6FA0;
+            --h1: #5a4e82;
           }
           @media (prefers-color-scheme: dark) {
             :root {
-              --bg: #1c1c1e;
-              --fg: #f2f2f7;
-              --accent: #e9789c;
-              --accent-light: #3a1f2e;
-              --border: #3a3a3c;
-              --code-bg: #2c2c2e;
-              --blockquote-bg: #2a1a22;
-              --link: #e9789c;
-              --h1: #e9789c;
+              --bg: #191620;
+              --fg: #f0eaf5;
+              --accent: #B3A8E8;
+              --accent-light: #2a2538;
+              --border: #38324a;
+              --code-bg: #211d2a;
+              --blockquote-bg: #211d2a;
+              --link: #B3A8E8;
+              --h1: #B3A8E8;
             }
           }
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -710,7 +710,7 @@ struct EmptyMarkdownPlaceholder: View {
         VStack(spacing: 20) {
             Image(systemName: "doc.text")
                 .font(.system(size: 64))
-                .foregroundColor(Color.pink.opacity(0.4))
+                .foregroundColor(.secondary.opacity(0.5))
 
             Text("No Pattern Open")
                 .font(.title2)

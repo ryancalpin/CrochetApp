@@ -6,9 +6,11 @@ struct PatternStatsBannerView: View {
     var aiDifficulty: String? = nil
     var aiTotalRows: String? = nil
 
+    @ObservedObject private var settings = AppSettings.shared
+    private var rowColor: Color { settings.pillColorScheme.rowColor }
+
     var body: some View {
         HStack(spacing: 12) {
-            // Pattern name
             Text(entry.displayName)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.primary)
@@ -16,21 +18,18 @@ struct PatternStatsBannerView: View {
 
             Spacer(minLength: 0)
 
-            // AI difficulty badge (shows while loading, hides when unavailable)
             if let difficulty = parsedDifficulty {
                 difficultyBadge(difficulty)
             } else {
                 aiLoadingChip(label: "Difficulty")
             }
 
-            // Row progress
             if let goal = entry.rowGoal, goal > 0 {
                 rowProgress(current: store.rowCount, goal: goal)
             } else {
                 statChip(label: "Rows", value: "\(store.rowCount)")
             }
 
-            // Total rows from AI
             if let total = aiTotalRows {
                 statChip(label: "Total", value: total)
             } else {
@@ -73,13 +72,13 @@ struct PatternStatsBannerView: View {
             Text("Row \(current)/\(goal)").font(.system(size: 11)).foregroundColor(.secondary)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3).fill(Color.pink.opacity(0.2)).frame(height: 5)
-                    RoundedRectangle(cornerRadius: 3).fill(Color.pink)
+                    RoundedRectangle(cornerRadius: 3).fill(rowColor.opacity(0.2)).frame(height: 5)
+                    RoundedRectangle(cornerRadius: 3).fill(rowColor)
                         .frame(width: geo.size.width * fraction, height: 5)
                 }
             }
             .frame(width: 60, height: 5)
-            Text("\(pct)%").font(.system(size: 11, weight: .medium)).foregroundColor(.pink)
+            Text("\(pct)%").font(.system(size: 11, weight: .medium)).foregroundColor(rowColor)
         }
     }
 

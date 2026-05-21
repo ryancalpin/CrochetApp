@@ -2,15 +2,39 @@ import Foundation
 import Combine
 import AppKit
 
+// MARK: - Yarn Stash Model
+
+struct YarnEntry: Codable, Identifiable {
+    let id: UUID
+    var name: String
+    var weight: String   // e.g. "Worsted", "DK", "Bulky"
+    var colorHex: String // e.g. "#9B8ED4"
+    var yardage: Int     // total yards in stash
+
+    init(name: String, weight: String = "Worsted", colorHex: String = "#888888", yardage: Int = 0) {
+        self.id = UUID()
+        self.name = name
+        self.weight = weight
+        self.colorHex = colorHex
+        self.yardage = yardage
+    }
+}
+
 class PatternLibrary: ObservableObject {
     @Published var entries: [PatternEntry] = []
     @Published var activeEntryID: UUID? = nil
+    @Published var yarnStash: [YarnEntry] = []
 
     private let storageURL: URL = {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let dir = support.appendingPathComponent("CrochetApp", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("patterns.json")
+    }()
+
+    private let yarnURL: URL = {
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return support.appendingPathComponent("CrochetApp/yarn.json")
     }()
 
     // MARK: - Computed
@@ -32,6 +56,7 @@ class PatternLibrary: ObservableObject {
 
     init() {
         load()
+        loadYarn()
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(appWillTerminate),
@@ -104,6 +129,40 @@ class PatternLibrary: ObservableObject {
         save()
     }
 
+    // MARK: - Tags
+
+    func addTag(_ tag: String, to entryID: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
+        let cleaned = tag.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !cleaned.isEmpty, !entries[i].tags.contains(cleaned) else { return }
+        entries[i].tags.append(cleaned)
+        save()
+    }
+
+    func removeTag(_ tag: String, from entryID: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
+        entries[i].tags.removeAll { $0 == tag }
+        save()
+    }
+
+    // MARK: - Yarn Stash
+
+    func addYarn(_ yarn: YarnEntry) {
+        yarnStash.append(yarn)
+        saveYarn()
+    }
+
+    func removeYarn(id: UUID) {
+        yarnStash.removeAll { $0.id == id }
+        saveYarn()
+    }
+
+    func updateYarn(_ yarn: YarnEntry) {
+        guard let i = yarnStash.firstIndex(where: { $0.id == yarn.id }) else { return }
+        yarnStash[i] = yarn
+        saveYarn()
+    }
+
     /// Persist AI analysis results for a pattern so they don't need to be re-run on next launch.
     func updateAICache(
         for entryID: UUID,
@@ -145,11 +204,23 @@ class PatternLibrary: ObservableObject {
         entries = decoded
     }
 
+    private func saveYarn() {
+        guard let data = try? JSONEncoder().encode(yarnStash) else { return }
+        try? data.write(to: yarnURL, options: .atomic)
+    }
+
+    private func loadYarn() {
+        guard let data = try? Data(contentsOf: yarnURL),
+              let decoded = try? JSONDecoder().decode([YarnEntry].self, from: data) else { return }
+        yarnStash = decoded
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
 
     @objc private func appWillTerminate() {
         save()
+        saveYarn()
     }
 }
