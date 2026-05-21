@@ -1,0 +1,50 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods
+Pods/
+*.podspec
+.cocoapods/
+
+# Carthage
+Carthage/Build/
+
+# Build files
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# User-specific files
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.pbxuser
+!default.mode1v3
+!default.mode2v3
+!default.perspectivev3
+!default.pbxuser
+xcuserdata/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Other
+*.swp
+*~.nib
+*.moved-aside
+.superpowers/
