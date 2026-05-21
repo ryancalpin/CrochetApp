@@ -36,6 +36,9 @@ final class AppSettings: ObservableObject {
     /// Whether the AI inspector panel was open when the app last closed.
     @AppStorage("crochet.aiPanelOpen") var aiPanelOpen: Bool = false
 
+    /// Whether the session timer is visible in the counter bar.
+    @AppStorage("crochet.showTimer") var showTimer: Bool = true
+
     // MARK: - Pill color scheme
 
     @AppStorage("crochet.pillColorScheme") var pillColorSchemeRaw: String = PillColorScheme.classic.rawValue

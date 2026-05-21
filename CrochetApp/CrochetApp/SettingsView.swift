@@ -55,10 +55,8 @@ struct SettingsView: View {
     private var paceTab: some View {
         Form {
             Section("AI Time Estimation") {
-                HStack {
-                    Text("Rows per hour")
-                    Spacer()
-                    Stepper("\(settings.rowsPerHour) rows/hr", value: $settings.rowsPerHour, in: 1...300)
+                LabeledContent("Rows per hour") {
+                    Stepper("\(settings.rowsPerHour)", value: $settings.rowsPerHour, in: 1...300)
                         .fixedSize()
                 }
                 Text("Used by the AI panel to estimate how long your project will take. Adjust based on your typical pace for the current stitch complexity.")
@@ -73,6 +71,10 @@ struct SettingsView: View {
 
     private var appearanceTab: some View {
         Form {
+            Section("Counter Bar") {
+                Toggle("Show session timer", isOn: $settings.showTimer)
+            }
+
             Section("Counter Display Size") {
                 Picker("Size", selection: Binding(
                     get: { settings.counterSize },

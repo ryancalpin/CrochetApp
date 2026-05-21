@@ -228,6 +228,7 @@ struct PatternLibraryView: View {
     }()
 
     private func relativeDate(_ date: Date) -> String {
-        Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
+        if Date().timeIntervalSince(date) < 60 { return "Just now" }
+        return Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
     }
 }

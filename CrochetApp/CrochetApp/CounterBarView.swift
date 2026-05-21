@@ -34,8 +34,10 @@ struct CounterBarView: View {
                 if compact {
                     overflowMenu
                 } else {
-                    timerView
-                    Divider().frame(height: 30)
+                    if settings.showTimer {
+                        timerView
+                        Divider().frame(height: 30)
+                    }
                     resetButton
                     if #available(macOS 26.0, *) {
                         Divider().frame(height: 30)
@@ -66,12 +68,12 @@ struct CounterBarView: View {
     // MARK: - Row Pill
 
     private var rowPill: some View {
-        pillShell(color: .pink) {
+        pillShell(color: rowColor) {
             Button { withAnimation { store.decrementRow() } } label: {
                 Image(systemName: "minus")
                     .font(.system(size: 13, weight: .semibold))
                     .frame(width: pillHeight, height: pillHeight)
-                    .background(Color.pink.opacity(0.15))
+                    .background(rowColor.opacity(0.15))
                     .foregroundColor(store.rowCount == 0 ? .secondary : rowColor)
             }
             .buttonStyle(.plain)
@@ -101,7 +103,7 @@ struct CounterBarView: View {
                 Image(systemName: "plus")
                     .font(.system(size: 13, weight: .semibold))
                     .frame(width: pillHeight, height: pillHeight)
-                    .background(Color.pink.opacity(0.15))
+                    .background(rowColor.opacity(0.15))
                     .foregroundColor(rowColor)
             }
             .buttonStyle(.plain)
@@ -130,12 +132,12 @@ struct CounterBarView: View {
     // MARK: - Stitch Pill
 
     private var stitchPill: some View {
-        pillShell(color: .purple) {
+        pillShell(color: stitchColor) {
             Button { withAnimation { store.decrementStitch() } } label: {
                 Image(systemName: "minus")
                     .font(.system(size: 13, weight: .semibold))
                     .frame(width: pillHeight, height: pillHeight)
-                    .background(Color.purple.opacity(0.15))
+                    .background(stitchColor.opacity(0.15))
                     .foregroundColor(store.stitchCount == 0 ? .secondary : stitchColor)
             }
             .buttonStyle(.plain)
@@ -165,7 +167,7 @@ struct CounterBarView: View {
                 Image(systemName: "plus")
                     .font(.system(size: 13, weight: .semibold))
                     .frame(width: pillHeight, height: pillHeight)
-                    .background(Color.purple.opacity(0.15))
+                    .background(stitchColor.opacity(0.15))
                     .foregroundColor(stitchColor)
             }
             .buttonStyle(.plain)
