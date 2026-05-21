@@ -9,10 +9,15 @@ struct ContentView: View {
     @State private var showAIPanel: Bool = UserDefaults.standard.aiPanelOpen
 
     var body: some View {
-        NavigationSplitView {
+        HStack(spacing: 0) {
+            // ── Sidebar ───────────────────────────────────────────────
             PatternLibraryView(library: library, store: store)
-                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
-        } detail: {
+                .frame(minWidth: 200, idealWidth: 220, maxWidth: 280)
+                .frame(maxHeight: .infinity)
+
+            Divider()
+
+            // ── Detail ────────────────────────────────────────────────
             VStack(spacing: 0) {
                 CounterBarView(
                     store: store,
@@ -35,11 +40,17 @@ struct ContentView: View {
                 }
                 .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showAIPanel)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .navigationTitle(library.activeEntry?.displayName ?? "Crochet Helper")
         .background(KeyboardShortcutHandler(store: store))
         .onChange(of: showAIPanel) { newValue in
             UserDefaults.standard.aiPanelOpen = newValue
+        }
+        .onChange(of: library.activeEntry?.displayName) { name in
+            NSApp.mainWindow?.title = name ?? "Crochet Helper"
+        }
+        .onAppear {
+            NSApp.mainWindow?.title = library.activeEntry?.displayName ?? "Crochet Helper"
         }
     }
 
