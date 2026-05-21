@@ -171,8 +171,14 @@ struct AIPanelView: View {
     private func stitchVerifierContent(_ r: StitchCountResult) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             if r.issues.isEmpty {
-                Label("All rows verified — stitch counts add up correctly.", systemImage: "checkmark.circle.fill")
-                    .foregroundColor(.green).font(.system(size: 12))
+                if let note = r.unverifiableNote {
+                    Label(note, systemImage: "info.circle")
+                        .foregroundColor(.secondary).font(.system(size: 12))
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Label("All rows verified — stitch counts add up correctly.", systemImage: "checkmark.circle.fill")
+                        .foregroundColor(.green).font(.system(size: 12))
+                }
             } else {
                 Text("The following rows have stitch count mismatches:")
                     .font(.system(size: 11)).foregroundColor(.secondary)

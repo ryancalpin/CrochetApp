@@ -346,6 +346,7 @@ struct MarkdownWebView: NSViewRepresentable {
 
         if htmlContent != context.coordinator.lastLoadedHTML {
             context.coordinator.lastLoadedHTML = htmlContent
+            context.coordinator.lastAbbreviationDict = [:]
             webView.loadHTMLString(htmlContent, baseURL: nil)
             return
         }
@@ -354,7 +355,7 @@ struct MarkdownWebView: NSViewRepresentable {
             context.coordinator.lastScrollRow = scrollToRow
             let js = """
             (function(){
-                var pat=new RegExp('\\\\bRow\\\\s+\(scrollToRow)\\\\b','i');
+                var pat=new RegExp('\\\\b(Row|Rnd|Round)\\\\s+\(scrollToRow)\\\\b','i');
                 var els=document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6');
                 for(var i=0;i<els.length;i++){
                     if(pat.test(els[i].textContent)){
@@ -364,6 +365,11 @@ struct MarkdownWebView: NSViewRepresentable {
             })();
             """
             webView.evaluateJavaScript(js, completionHandler: nil)
+        }
+
+        if !abbreviationDict.isEmpty, abbreviationDict != context.coordinator.lastAbbreviationDict {
+            context.coordinator.lastAbbreviationDict = abbreviationDict
+            context.coordinator.injectAbbreviationTooltips(into: webView, dict: abbreviationDict)
         }
     }
 
@@ -376,6 +382,7 @@ struct MarkdownWebView: NSViewRepresentable {
         var pendingAbbreviationDict: [String: String] = [:]
         var lastLoadedHTML: String = ""
         var lastScrollRow: Int = 0
+        var lastAbbreviationDict: [String: String] = [:]
 
         init(annotations: [Int: String]) {
             self.pendingAnnotations = annotations
@@ -384,6 +391,7 @@ struct MarkdownWebView: NSViewRepresentable {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             injectAnnotationJS(into: webView, annotations: pendingAnnotations)
             if !pendingAbbreviationDict.isEmpty {
+                lastAbbreviationDict = pendingAbbreviationDict
                 injectAbbreviationTooltips(into: webView, dict: pendingAbbreviationDict)
             }
         }
@@ -412,10 +420,46 @@ struct MarkdownWebView: NSViewRepresentable {
                 }
               });
 
+              // Floating pencil button
+              var noteBtn = document.createElement('div');
+              noteBtn.id = '__notebtn';
+              noteBtn.textContent = '✎';
+              noteBtn.title = 'Add note';
+              noteBtn.style.cssText = 'position:fixed;background:rgba(181,85,126,0.82);color:white;' +
+                  'width:20px;height:20px;border-radius:50%;font-size:11px;display:none;' +
+                  'align-items:center;justify-content:center;cursor:pointer;z-index:9000;' +
+                  'box-shadow:0 1px 4px rgba(0,0,0,0.3);user-select:none;line-height:1;';
+              document.body.appendChild(noteBtn);
+
+              var hoveredBlock = null, hoveredIdx = -1, hideTimer = null;
+
               blocks.forEach(function(block, idx) {
-                block.addEventListener('click', function(e) {
-                  if (e.altKey) { e.stopPropagation(); openEditor(block, idx); }
+                block.addEventListener('mouseenter', function() {
+                  clearTimeout(hideTimer);
+                  hoveredBlock = block; hoveredIdx = idx;
+                  var rect = block.getBoundingClientRect();
+                  noteBtn.style.left = (rect.right - 26) + 'px';
+                  noteBtn.style.top = Math.max(4, rect.top) + 'px';
+                  noteBtn.style.display = 'flex';
                 });
+                block.addEventListener('mouseleave', function(e) {
+                  if (e.relatedTarget === noteBtn) return;
+                  hideTimer = setTimeout(function() { noteBtn.style.display = 'none'; }, 120);
+                });
+              });
+
+              noteBtn.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+              noteBtn.addEventListener('mouseleave', function() { noteBtn.style.display = 'none'; });
+              noteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                noteBtn.style.display = 'none';
+                openEditor(hoveredBlock, hoveredIdx);
+              });
+
+              // Click outside editor to dismiss
+              document.addEventListener('click', function(e) {
+                var editor = document.querySelector('[id^="ann-editor-"]');
+                if (editor && !editor.contains(e.target)) { editor.remove(); }
               });
 
               function noteId(idx) { return 'ann-note-' + idx; }
@@ -490,13 +534,11 @@ struct MarkdownWebView: NSViewRepresentable {
             }
         }
 
-        private func injectAbbreviationTooltips(into webView: WKWebView, dict: [String: String]) {
+        func injectAbbreviationTooltips(into webView: WKWebView, dict: [String: String]) {
             guard let data = try? JSONSerialization.data(withJSONObject: dict),
                   let json = String(data: data, encoding: .utf8) else { return }
             let js = """
             (function(){
-                if(window.__abbrevInjected)return;
-                window.__abbrevInjected=true;
                 var abbrevs=\(json);
                 var keys=Object.keys(abbrevs).sort(function(a,b){return b.length-a.length;});
                 if(!keys.length)return;

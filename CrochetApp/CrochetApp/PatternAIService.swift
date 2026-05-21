@@ -82,30 +82,30 @@ final class PatternAIService: ObservableObject {
         defer { isLoadingSummary = false }
 
         let session = LanguageModelSession()
+        let rowsPerHour = UserDefaults.standard.rowsPerHour
         let prompt = """
-        You are a crochet expert. Read the following crochet pattern and extract exactly these fields. \
-        Reply ONLY with lines in the format "Field: Value". Do not add any other text.
+        You are a crochet expert. Read this pattern and reply with ONLY these 6 lines. \
+        Fill in each value after the colon. Use "Unknown" if you cannot determine a value.
 
-        Fields:
-        PatternName: (name of the pattern, or "Unknown")
-        SkillLevel: (Beginner, Intermediate, or Advanced)
-        Materials: (yarn weight, hook size, yardage — one line summary)
-        TotalRows: (number of rows if determinable, otherwise "Unknown")
-        EstimatedTime: (use "\(UserDefaults.standard.rowsPerHour) rows/hour" as the pace and calculate hours if TotalRows is known, otherwise "Unknown")
-        KeyStitches: (comma-separated list of main stitches used)
+        Pattern: <name of the pattern>
+        Level: <Beginner, Intermediate, or Advanced>
+        Materials: <yarn weight, hook size — one line>
+        Rows: <total row/round count if stated, otherwise Unknown>
+        Time: <estimate using \(rowsPerHour) rows/hour if Rows is known, otherwise Unknown>
+        Stitches: <comma-separated main stitches used>
 
-        Pattern:
+        Crochet pattern to analyze:
         \(patternText)
         """
         let response = try await session.respond(to: prompt)
         let text = response.content
         let result = PatternSummary(
-            patternName: extractField("PatternName", from: text),
-            skillLevel: extractField("SkillLevel", from: text),
+            patternName: extractField("Pattern", from: text),
+            skillLevel: extractField("Level", from: text),
             materials: extractField("Materials", from: text),
-            totalRows: extractField("TotalRows", from: text),
-            estimatedTime: extractField("EstimatedTime", from: text),
-            keyStitches: extractField("KeyStitches", from: text)
+            totalRows: extractField("Rows", from: text),
+            estimatedTime: extractField("Time", from: text),
+            keyStitches: extractField("Stitches", from: text)
         )
         summaryCache[patternID] = result
         return result
@@ -261,6 +261,16 @@ final class PatternAIService: ObservableObject {
         isLoadingStitchVerifier = true
         defer { isLoadingStitchVerifier = false }
 
+        let maxChars = 6000
+        guard patternText.count <= maxChars else {
+            let result = StitchCountResult(
+                issues: [],
+                unverifiableNote: "Pattern is too long to verify (\(patternText.count) characters). Try pasting just the row-by-row instructions."
+            )
+            stitchVerifierCache[patternID] = result
+            return result
+        }
+
         let session = LanguageModelSession()
         let prompt = """
         You are a crochet expert and stitch math checker. Read the following pattern row by row and verify stitch counts.
@@ -365,9 +375,10 @@ final class PatternAIService: ObservableObject {
     // MARK: - Helpers
 
     private func extractField(_ field: String, from text: String) -> String {
+        let prefix = "\(field):".lowercased()
         let lines = text.components(separatedBy: "\n")
         for line in lines {
-            if line.hasPrefix("\(field):") {
+            if line.lowercased().hasPrefix(prefix) {
                 return line.dropFirst(field.count + 1).trimmingCharacters(in: .whitespaces)
             }
         }
