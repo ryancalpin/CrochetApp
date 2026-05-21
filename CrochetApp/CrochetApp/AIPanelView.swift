@@ -5,11 +5,12 @@ struct AIPanelView: View {
     let entry: PatternEntry
     let patternText: String
     @Binding var showAIPanel: Bool
+    @Binding var abbreviationDict: [String: String]
 
     @StateObject private var service = PatternAIService()
 
     @State private var summary: PatternSummary? = nil
-    @State private var abbreviations: AbbreviationList? = nil
+    @State private var abbreviationList: AbbreviationList? = nil
     @State private var materials: MaterialsBreakdown? = nil
     @State private var difficulty: String? = nil
     @State private var conversion: String? = nil
@@ -28,129 +29,119 @@ struct AIPanelView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Image(systemName: "sparkles")
-                    .foregroundColor(.purple)
-                Text("AI Assistant")
-                    .font(.system(size: 13, weight: .semibold))
-                Spacer()
-                Button {
-                    showAIPanel = false
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 16))
-                }
-                .buttonStyle(.plain)
-                .help("Close AI panel")
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color(NSColor.windowBackgroundColor))
-
+            header
             Divider()
-
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    AIFeatureSection(title: "Summary", isLoading: service.isLoadingSummary, onRegenerate: {
-                        service.clearCache(for: entry.id); summary = nil; summaryError = nil; loadSummary()
-                    }) {
+                    AIFeatureSection(title: "Summary", isLoading: service.isLoadingSummary, onRegenerate: regenSummary) {
                         if let s = summary { summaryContent(s) }
                         else if let e = summaryError { errorText(e) }
-                        else { Color.clear.onAppear { loadSummary() } }
+                        else { loadingPlaceholder }
                     }
-
                     Divider().padding(.horizontal, 12)
-
-                    AIFeatureSection(title: "Abbreviations", isLoading: service.isLoadingAbbreviations, onRegenerate: {
-                        service.clearCache(for: entry.id); abbreviations = nil; abbreviationsError = nil; loadAbbreviations()
-                    }) {
-                        if let a = abbreviations { abbreviationsContent(a) }
+                    AIFeatureSection(title: "Abbreviations", isLoading: service.isLoadingAbbreviations, onRegenerate: regenAbbreviations) {
+                        if let a = abbreviationList { abbreviationsContent(a) }
                         else if let e = abbreviationsError { errorText(e) }
-                        else { Color.clear.onAppear { loadAbbreviations() } }
+                        else { loadingPlaceholder }
                     }
-
                     Divider().padding(.horizontal, 12)
-
                     AIFeatureSection(title: "Ask a Question", isLoading: false, onRegenerate: {}) {
                         PatternQAView(service: service, patternText: patternText)
                     }
-
                     Divider().padding(.horizontal, 12)
-
-                    AIFeatureSection(title: "Materials", isLoading: service.isLoadingMaterials, onRegenerate: {
-                        service.clearCache(for: entry.id); materials = nil; materialsError = nil; loadMaterials()
-                    }) {
+                    AIFeatureSection(title: "Materials", isLoading: service.isLoadingMaterials, onRegenerate: regenMaterials) {
                         if let m = materials { materialsContent(m) }
                         else if let e = materialsError { errorText(e) }
-                        else { Color.clear.onAppear { loadMaterials() } }
+                        else { loadingPlaceholder }
                     }
-
                     Divider().padding(.horizontal, 12)
-
-                    AIFeatureSection(title: "Difficulty", isLoading: service.isLoadingDifficulty, onRegenerate: {
-                        service.clearCache(for: entry.id); difficulty = nil; difficultyError = nil; loadDifficulty()
-                    }) {
-                        if let d = difficulty {
-                            Text(d).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true)
-                        } else if let e = difficultyError { errorText(e) }
-                        else { Color.clear.onAppear { loadDifficulty() } }
+                    AIFeatureSection(title: "Difficulty", isLoading: service.isLoadingDifficulty, onRegenerate: regenDifficulty) {
+                        if let d = difficulty { Text(d).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true) }
+                        else if let e = difficultyError { errorText(e) }
+                        else { loadingPlaceholder }
                     }
-
                     Divider().padding(.horizontal, 12)
-
-                    AIFeatureSection(title: "US ↔ UK Conversion", isLoading: service.isLoadingConversion, onRegenerate: {
-                        service.clearCache(for: entry.id); conversion = nil; conversionError = nil; loadConversion()
-                    }) {
+                    AIFeatureSection(title: "US ↔ UK Conversion", isLoading: service.isLoadingConversion, onRegenerate: regenConversion) {
                         if let c = conversion {
-                            ScrollView {
-                                Text(c).font(.system(size: 11, design: .monospaced))
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            .frame(maxHeight: 180)
+                            Text(c).font(.system(size: 11, design: .monospaced))
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         } else if let e = conversionError { errorText(e) }
-                        else { Color.clear.onAppear { loadConversion() } }
+                        else { loadingPlaceholder }
                     }
-
                     Divider().padding(.horizontal, 12)
-
-                    AIFeatureSection(title: "Stitch Count Verifier", isLoading: service.isLoadingStitchVerifier, onRegenerate: {
-                        service.clearCache(for: entry.id); stitchResult = nil; stitchError = nil; loadStitchVerifier()
-                    }) {
+                    AIFeatureSection(title: "Stitch Count Verifier", isLoading: service.isLoadingStitchVerifier, onRegenerate: regenStitch) {
                         if let r = stitchResult { stitchVerifierContent(r) }
                         else if let e = stitchError { errorText(e) }
-                        else { Color.clear.onAppear { loadStitchVerifier() } }
+                        else { loadingPlaceholder }
                     }
-
                     Divider().padding(.horizontal, 12)
-
-                    AIFeatureSection(title: "Yarn Substitution", isLoading: service.isLoadingYarnSub, onRegenerate: {
-                        service.clearCache(for: entry.id); yarnSub = nil; yarnSubError = nil; loadYarnSub()
-                    }) {
-                        if let y = yarnSub {
-                            Text(y).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true)
-                        } else if let e = yarnSubError { errorText(e) }
-                        else { Color.clear.onAppear { loadYarnSub() } }
+                    AIFeatureSection(title: "Yarn Substitution", isLoading: service.isLoadingYarnSub, onRegenerate: regenYarnSub) {
+                        if let y = yarnSub { Text(y).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true) }
+                        else if let e = yarnSubError { errorText(e) }
+                        else { loadingPlaceholder }
                     }
-
                     Divider().padding(.horizontal, 12)
-
-                    AIFeatureSection(title: "Time Estimate", isLoading: service.isLoadingTimeEstimate, onRegenerate: {
-                        service.clearCache(for: entry.id); timeEstimate = nil; timeError = nil; loadTimeEstimate()
-                    }) {
-                        if let t = timeEstimate {
-                            Text(t).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true)
-                        } else if let e = timeError { errorText(e) }
-                        else { Color.clear.onAppear { loadTimeEstimate() } }
+                    AIFeatureSection(title: "Time Estimate", isLoading: service.isLoadingTimeEstimate, onRegenerate: regenTime) {
+                        if let t = timeEstimate { Text(t).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true) }
+                        else if let e = timeError { errorText(e) }
+                        else { loadingPlaceholder }
                     }
                 }
                 .padding(.vertical, 4)
             }
         }
-        .frame(width: 280)
         .background(Color(NSColor.controlBackgroundColor))
+        .task(id: entry.id) {
+            resetAll()
+            loadAll()
+        }
     }
+
+    // MARK: - Header
+
+    private var header: some View {
+        HStack {
+            Image(systemName: "sparkles").foregroundColor(.purple)
+            Text("AI Assistant").font(.system(size: 13, weight: .semibold))
+            Spacer()
+            Button { showAIPanel = false } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.secondary).font(.system(size: 16))
+            }
+            .buttonStyle(.plain).help("Close AI panel")
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(Color(NSColor.windowBackgroundColor))
+    }
+
+    private var loadingPlaceholder: some View {
+        ProgressView().scaleEffect(0.6).frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Reset / load
+
+    private func resetAll() {
+        summary = nil; abbreviationList = nil; materials = nil; difficulty = nil
+        conversion = nil; stitchResult = nil; yarnSub = nil; timeEstimate = nil
+        summaryError = nil; abbreviationsError = nil; materialsError = nil; difficultyError = nil
+        conversionError = nil; stitchError = nil; yarnSubError = nil; timeError = nil
+        abbreviationDict = [:]
+    }
+
+    private func loadAll() {
+        loadSummary(); loadAbbreviations(); loadMaterials(); loadDifficulty()
+        loadConversion(); loadStitchVerifier(); loadYarnSub(); loadTimeEstimate()
+    }
+
+    private func regenSummary() { service.clearCache(for: entry.id); summary = nil; summaryError = nil; loadSummary() }
+    private func regenAbbreviations() { service.clearCache(for: entry.id); abbreviationList = nil; abbreviationsError = nil; loadAbbreviations() }
+    private func regenMaterials() { service.clearCache(for: entry.id); materials = nil; materialsError = nil; loadMaterials() }
+    private func regenDifficulty() { service.clearCache(for: entry.id); difficulty = nil; difficultyError = nil; loadDifficulty() }
+    private func regenConversion() { service.clearCache(for: entry.id); conversion = nil; conversionError = nil; loadConversion() }
+    private func regenStitch() { service.clearCache(for: entry.id); stitchResult = nil; stitchError = nil; loadStitchVerifier() }
+    private func regenYarnSub() { service.clearCache(for: entry.id); yarnSub = nil; yarnSubError = nil; loadYarnSub() }
+    private func regenTime() { service.clearCache(for: entry.id); timeEstimate = nil; timeError = nil; loadTimeEstimate() }
 
     // MARK: - Content renderers
 
@@ -169,23 +160,18 @@ struct AIPanelView: View {
         VStack(alignment: .leading, spacing: 4) {
             if a.convention != "US" && a.convention != "Unknown" {
                 Text("Using \(a.convention) convention")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.orange)
-                    .padding(.bottom, 2)
+                    .font(.system(size: 10, weight: .semibold)).foregroundColor(.orange).padding(.bottom, 2)
             }
             ForEach(a.entries) { abbr in
                 HStack(alignment: .top, spacing: 4) {
-                    Text(abbr.abbreviation)
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    Text(abbr.abbreviation).font(.system(size: 11, weight: .semibold, design: .monospaced))
                     Text("—").font(.system(size: 11)).foregroundColor(.secondary)
-                    Text(abbr.meaning)
-                        .font(.system(size: 11)).foregroundColor(.secondary)
+                    Text(abbr.meaning).font(.system(size: 11)).foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             if a.entries.isEmpty {
-                Text("No abbreviations detected.")
-                    .font(.system(size: 11)).foregroundColor(.secondary)
+                Text("No abbreviations detected.").font(.system(size: 11)).foregroundColor(.secondary)
             }
         }
     }
@@ -200,7 +186,7 @@ struct AIPanelView: View {
 
     private func stitchVerifierContent(_ r: StitchCountResult) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            if r.issues.isEmpty && r.unverifiableNote == nil {
+            if r.issues.isEmpty {
                 Label("All rows verified", systemImage: "checkmark.circle.fill")
                     .foregroundColor(.green).font(.system(size: 12))
             } else {
@@ -213,10 +199,6 @@ struct AIPanelView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
-                }
-                if let note = r.unverifiableNote {
-                    Text(note).font(.system(size: 11)).foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
@@ -243,8 +225,11 @@ struct AIPanelView: View {
         catch { summaryError = error.localizedDescription } }
     }
     private func loadAbbreviations() {
-        Task { do { abbreviations = try await service.generateAbbreviations(patternID: entry.id, patternText: patternText) }
-        catch { abbreviationsError = error.localizedDescription } }
+        Task { do {
+            let result = try await service.generateAbbreviations(patternID: entry.id, patternText: patternText)
+            abbreviationList = result
+            abbreviationDict = Dictionary(uniqueKeysWithValues: result.entries.map { ($0.abbreviation, $0.meaning) })
+        } catch { abbreviationsError = error.localizedDescription } }
     }
     private func loadMaterials() {
         Task { do { materials = try await service.extractMaterials(patternID: entry.id, patternText: patternText) }

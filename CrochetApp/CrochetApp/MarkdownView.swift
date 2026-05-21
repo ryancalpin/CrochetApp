@@ -328,6 +328,8 @@ struct MarkdownWebView: NSViewRepresentable {
     let htmlContent: String
     let annotations: [Int: String]
     let bridge: AnnotationBridge
+    var scrollToRow: Int = 0
+    var abbreviationDict: [String: String] = [:]
 
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -340,9 +342,29 @@ struct MarkdownWebView: NSViewRepresentable {
 
     func updateNSView(_ webView: WKWebView, context: Context) {
         context.coordinator.pendingAnnotations = annotations
-        guard htmlContent != context.coordinator.lastLoadedHTML else { return }
-        context.coordinator.lastLoadedHTML = htmlContent
-        webView.loadHTMLString(htmlContent, baseURL: nil)
+        context.coordinator.pendingAbbreviationDict = abbreviationDict
+
+        if htmlContent != context.coordinator.lastLoadedHTML {
+            context.coordinator.lastLoadedHTML = htmlContent
+            webView.loadHTMLString(htmlContent, baseURL: nil)
+            return
+        }
+
+        if scrollToRow != context.coordinator.lastScrollRow, scrollToRow > 0 {
+            context.coordinator.lastScrollRow = scrollToRow
+            let js = """
+            (function(){
+                var pat=new RegExp('\\\\bRow\\\\s+\(scrollToRow)\\\\b','i');
+                var els=document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6');
+                for(var i=0;i<els.length;i++){
+                    if(pat.test(els[i].textContent)){
+                        els[i].scrollIntoView({behavior:'smooth',block:'start'});break;
+                    }
+                }
+            })();
+            """
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -351,7 +373,9 @@ struct MarkdownWebView: NSViewRepresentable {
 
     final class Coordinator: NSObject, WKNavigationDelegate {
         var pendingAnnotations: [Int: String]
+        var pendingAbbreviationDict: [String: String] = [:]
         var lastLoadedHTML: String = ""
+        var lastScrollRow: Int = 0
 
         init(annotations: [Int: String]) {
             self.pendingAnnotations = annotations
@@ -359,6 +383,9 @@ struct MarkdownWebView: NSViewRepresentable {
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             injectAnnotationJS(into: webView, annotations: pendingAnnotations)
+            if !pendingAbbreviationDict.isEmpty {
+                injectAbbreviationTooltips(into: webView, dict: pendingAbbreviationDict)
+            }
         }
 
         private func injectAnnotationJS(into webView: WKWebView, annotations: [Int: String]) {
@@ -463,6 +490,48 @@ struct MarkdownWebView: NSViewRepresentable {
                 }
             }
         }
+
+        private func injectAbbreviationTooltips(into webView: WKWebView, dict: [String: String]) {
+            guard let data = try? JSONSerialization.data(withJSONObject: dict),
+                  let json = String(data: data, encoding: .utf8) else { return }
+            let js = """
+            (function(){
+                if(window.__abbrevInjected)return;
+                window.__abbrevInjected=true;
+                var abbrevs=\(json);
+                var keys=Object.keys(abbrevs).sort(function(a,b){return b.length-a.length;});
+                if(!keys.length)return;
+                var pattern=new RegExp('\\\\b('+keys.map(function(k){
+                    return k.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&');
+                }).join('|')+')\\\\b','g');
+                function processNode(node){
+                    if(node.nodeType===Node.TEXT_NODE){
+                        var text=node.textContent;
+                        if(!pattern.test(text))return;
+                        pattern.lastIndex=0;
+                        var frag=document.createDocumentFragment();
+                        var last=0,m;
+                        while((m=pattern.exec(text))!==null){
+                            if(m.index>last)frag.appendChild(document.createTextNode(text.slice(last,m.index)));
+                            var abbr=document.createElement('abbr');
+                            abbr.textContent=m[0];
+                            abbr.title=abbrevs[m[0]]||abbrevs[m[0].toLowerCase()]||m[0];
+                            abbr.style.cssText='border-bottom:1px dotted currentColor;cursor:help;text-decoration:none';
+                            frag.appendChild(abbr);
+                            last=m.index+m[0].length;
+                        }
+                        if(last<text.length)frag.appendChild(document.createTextNode(text.slice(last)));
+                        node.parentNode.replaceChild(frag,node);
+                    } else if(node.nodeType===Node.ELEMENT_NODE &&
+                              !['ABBR','CODE','PRE','SCRIPT','STYLE'].includes(node.tagName)){
+                        Array.from(node.childNodes).forEach(processNode);
+                    }
+                }
+                Array.from(document.querySelectorAll('p,li')).forEach(processNode);
+            })();
+            """
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
     }
 }
 
@@ -470,6 +539,8 @@ struct MarkdownWebView: NSViewRepresentable {
 struct MarkdownView: View {
     let fileURL: URL?
     @ObservedObject var library: PatternLibrary
+    var scrollToRow: Int = 0
+    var abbreviationDict: [String: String] = [:]
 
     @State private var markdownContent: String = ""
     @State private var htmlContent: String = ""
@@ -478,9 +549,11 @@ struct MarkdownView: View {
 
     private let bridge: AnnotationBridge
 
-    init(fileURL: URL?, library: PatternLibrary) {
+    init(fileURL: URL?, library: PatternLibrary, scrollToRow: Int = 0, abbreviationDict: [String: String] = [:]) {
         self.fileURL = fileURL
         self.library = library
+        self.scrollToRow = scrollToRow
+        self.abbreviationDict = abbreviationDict
         self.bridge = AnnotationBridge(library: library)
     }
 
@@ -509,7 +582,9 @@ struct MarkdownView: View {
                 MarkdownWebView(
                     htmlContent: htmlContent,
                     annotations: library.activeEntry?.annotations ?? [:],
-                    bridge: bridge
+                    bridge: bridge,
+                    scrollToRow: scrollToRow,
+                    abbreviationDict: abbreviationDict
                 )
             }
         }

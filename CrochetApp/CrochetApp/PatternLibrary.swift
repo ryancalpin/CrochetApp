@@ -57,18 +57,17 @@ class PatternLibrary: ObservableObject {
     }
 
     func select(entryID: UUID) {
-        guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
-        entries[i].lastOpened = Date()
         activeEntryID = entryID
-        save()
     }
 
     func updateActiveCounters(row: Int, stitch: Int, autoReset: Bool) {
         guard let id = activeEntryID,
               let i = entries.firstIndex(where: { $0.id == id }) else { return }
+        let changed = entries[i].rowCount != row || entries[i].stitchCount != stitch
         entries[i].rowCount = row
         entries[i].stitchCount = stitch
         entries[i].autoResetStitch = autoReset
+        if changed { entries[i].lastOpened = Date() }
         save()
     }
 

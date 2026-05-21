@@ -7,6 +7,9 @@ struct ContentView: View {
     @ObservedObject var sessionTimer: SessionTimer
 
     @State private var showAIPanel: Bool = UserDefaults.standard.aiPanelOpen
+    @State private var aiPanelWidth: CGFloat = 280
+    @State private var abbreviationDict: [String: String] = [:]
+    @State private var patternScrollToRow: Int = 0
 
     var body: some View {
         HStack(spacing: 0) {
@@ -26,15 +29,30 @@ struct ContentView: View {
                     showAIPanel: $showAIPanel
                 )
 
+                if let entry = library.activeEntry {
+                    PatternStatsBannerView(entry: entry, store: store)
+                }
+
                 HStack(spacing: 0) {
-                    PatternContentView(fileURL: activeFileURL, library: library)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    PatternContentView(
+                        fileURL: activeFileURL,
+                        library: library,
+                        scrollToRow: patternScrollToRow,
+                        abbreviationDict: abbreviationDict
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                     if showAIPanel, let entry = library.activeEntry, let text = loadedPatternText {
                         if #available(macOS 26.0, *) {
-                            Divider()
-                            AIPanelView(entry: entry, patternText: text, showAIPanel: $showAIPanel)
-                                .transition(.move(edge: .trailing))
+                            resizableDivider
+                            AIPanelView(
+                                entry: entry,
+                                patternText: text,
+                                showAIPanel: $showAIPanel,
+                                abbreviationDict: $abbreviationDict
+                            )
+                            .frame(width: aiPanelWidth)
+                            .transition(.move(edge: .trailing))
                         }
                     }
                 }
@@ -43,16 +61,45 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(KeyboardShortcutHandler(store: store))
-        .onChange(of: showAIPanel) { newValue in
-            UserDefaults.standard.aiPanelOpen = newValue
-        }
+        .onChange(of: showAIPanel) { UserDefaults.standard.aiPanelOpen = $0 }
         .onChange(of: library.activeEntry?.displayName) { name in
             NSApp.mainWindow?.title = name ?? "Crochet Helper"
+        }
+        .onChange(of: library.activeEntryID) { _ in
+            abbreviationDict = [:]
+            patternScrollToRow = 0
+        }
+        .onChange(of: store.rowCount) { row in
+            patternScrollToRow = row
         }
         .onAppear {
             NSApp.mainWindow?.title = library.activeEntry?.displayName ?? "Crochet Helper"
         }
     }
+
+    // MARK: - Resizable AI panel divider
+
+    private var resizableDivider: some View {
+        Rectangle()
+            .fill(Color(NSColor.separatorColor))
+            .frame(width: 1)
+            .overlay(
+                Color.clear
+                    .frame(width: 8)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                aiPanelWidth = max(220, min(520, aiPanelWidth - value.translation.width))
+                            }
+                    )
+                    .onHover { hovering in
+                        if hovering { NSCursor.resizeLeftRight.push() }
+                        else { NSCursor.pop() }
+                    }
+            )
+    }
+
+    // MARK: - Bindings / helpers
 
     private var activeEntryBinding: Binding<PatternEntry?> {
         Binding(

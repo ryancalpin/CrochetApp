@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 struct PatternContentView: View {
     let fileURL: URL?
     @ObservedObject var library: PatternLibrary
+    var scrollToRow: Int = 0
+    var abbreviationDict: [String: String] = [:]
 
     var body: some View {
         Group {
@@ -13,10 +15,12 @@ struct PatternContentView: View {
                 if url.pathExtension.lowercased() == "pdf" {
                     PDFKitView(url: url)
                 } else {
-                    MarkdownView(fileURL: url, library: library)
+                    MarkdownView(fileURL: url, library: library,
+                                 scrollToRow: scrollToRow, abbreviationDict: abbreviationDict)
                 }
             } else {
-                MarkdownView(fileURL: nil, library: library)
+                MarkdownView(fileURL: nil, library: library,
+                             scrollToRow: scrollToRow, abbreviationDict: abbreviationDict)
             }
         }
     }
