@@ -1,182 +1,118 @@
 import SwiftUI
 
-/// Horizontal counter bar shown at the top of the content pane.
-/// Displays Row pill, Stitch pill, optional row-goal progress bar, and session timer.
 struct CounterBarView: View {
 
     @ObservedObject var store: CounterStore
     @ObservedObject var timer: SessionTimer
-    /// The active PatternEntry. Passed in so this view can read/write rowGoal, stitchGoal.
     @Binding var entry: PatternEntry?
     @Binding var showAIPanel: Bool
 
-    // MARK: - Local state for goal popovers
+    @ObservedObject private var settings = AppSettings.shared
 
-    @State private var showRowGoalPopover = false
+    @State private var showRowGoalPopover    = false
     @State private var showStitchGoalPopover = false
-    @State private var rowGoalInput: String = ""
+    @State private var rowGoalInput:    String = ""
     @State private var stitchGoalInput: String = ""
     @State private var showResetConfirmation = false
 
+    // Width below which secondary controls collapse into the ⋯ menu.
+    private let compactBreakpoint: CGFloat = 500
+
     var body: some View {
-        HStack(spacing: 12) {
+        GeometryReader { geo in
+            let compact = geo.size.width < compactBreakpoint
+            HStack(spacing: 10) {
+                rowPill
+                stitchPill
 
-            // ── Row Pill ──────────────────────────────────────────
-            rowPill
-
-            // ── Stitch Pill ───────────────────────────────────────
-            stitchPill
-
-            // ── Progress Bar (conditional) ────────────────────────
-            if let goal = entry?.rowGoal, goal > 0 {
-                rowProgressBar(current: store.rowCount, goal: goal)
-            }
-
-            Spacer()
-
-            // ── Auto-reset toggle ─────────────────────────────────
-            HStack(spacing: 6) {
-                Toggle("", isOn: $store.autoResetStitch)
-                    .toggleStyle(SwitchToggleStyle())
-                    .labelsHidden()
-                    .scaleEffect(0.75)
-                    .onChange(of: store.autoResetStitch) { newValue in
-                        store.library?.updateActiveCounters(
-                            row: store.rowCount,
-                            stitch: store.stitchCount,
-                            autoReset: newValue
-                        )
-                    }
-                Text("Auto-reset")
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary)
-            }
-
-            Divider().frame(height: 32)
-
-            // ── Keyboard hint ─────────────────────────────────────
-            Text("↑↓ row · ←→ stitch")
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundColor(Color(NSColor.tertiaryLabelColor))
-
-            Divider().frame(height: 32)
-
-            // ── Session Timer ─────────────────────────────────────
-            timerView
-
-            Divider().frame(height: 32)
-
-            // ── Reset button ──────────────────────────────────────
-            Button("Reset") {
-                showResetConfirmation = true
-            }
-            .buttonStyle(.bordered)
-            .tint(.red)
-            .controlSize(.small)
-            .confirmationDialog(
-                "Reset counters?",
-                isPresented: $showResetConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Reset", role: .destructive) { store.reset() }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Row and Stitch counts will be set to 0.")
-            }
-
-            // ── AI panel toggle — macOS 26+ only ─────────────────────
-            if #available(macOS 26.0, *) {
-                Divider().frame(height: 32)
-                Button {
-                    showAIPanel.toggle()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 13, weight: .semibold))
-                        Text("AI")
-                            .font(.system(size: 12, weight: .semibold))
-                    }
-                    .foregroundColor(showAIPanel ? .purple : .secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(showAIPanel ? Color.purple.opacity(0.12) : Color.clear)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                if !compact, let goal = entry?.rowGoal, goal > 0 {
+                    rowProgressBar(current: store.rowCount, goal: goal)
                 }
-                .buttonStyle(.plain)
-                .help(showAIPanel ? "Close AI panel" : "Open AI panel")
+
+                Spacer(minLength: 4)
+
+                if compact {
+                    overflowMenu
+                } else {
+                    timerView
+                    Divider().frame(height: 30)
+                    resetButton
+                    if #available(macOS 26.0, *) {
+                        Divider().frame(height: 30)
+                        aiToggleButton
+                    }
+                }
             }
+            .padding(.horizontal, 12)
+            .frame(maxHeight: .infinity, alignment: .center)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
+        .frame(height: pillHeight + 16)
         .background(Color(NSColor.windowBackgroundColor))
-        .overlay(alignment: .bottom) {
-            Divider()
+        .overlay(alignment: .bottom) { Divider() }
+        .confirmationDialog(
+            "Reset counters?",
+            isPresented: $showResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Reset", role: .destructive) { store.reset() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Row and Stitch counts will be set to 0.")
         }
     }
+
+    private var pillHeight: CGFloat { settings.counterSize.pillHeight }
 
     // MARK: - Row Pill
 
     private var rowPill: some View {
-        HStack(spacing: 0) {
-            Button(action: { withAnimation { store.decrementRow() } }) {
+        pillShell(color: .pink) {
+            Button { withAnimation { store.decrementRow() } } label: {
                 Image(systemName: "minus")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 36, height: 36)
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: pillHeight, height: pillHeight)
                     .background(Color.pink.opacity(0.15))
-                    .foregroundColor(store.rowCount == 0 ? Color.secondary : Color(red: 0.71, green: 0.33, blue: 0.49))
+                    .foregroundColor(store.rowCount == 0 ? .secondary : rowColor)
             }
             .buttonStyle(.plain)
             .disabled(store.rowCount == 0)
 
-            Divider().frame(height: 36)
+            Divider().frame(height: pillHeight)
 
             VStack(spacing: 1) {
                 HStack(spacing: 3) {
-                    Text("ROW")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(Color(red: 0.71, green: 0.33, blue: 0.49))
+                    Text("ROW").font(.system(size: 9, weight: .semibold)).foregroundColor(rowColor)
                     if let goal = entry?.rowGoal {
-                        Text("/ \(goal)")
-                            .font(.system(size: 9))
-                            .foregroundColor(Color(red: 0.71, green: 0.33, blue: 0.49).opacity(0.7))
+                        Text("/ \(goal)").font(.system(size: 9)).foregroundColor(rowColor.opacity(0.6))
                     }
                 }
                 Text("\(store.rowCount)")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(red: 0.71, green: 0.33, blue: 0.49))
+                    .font(.system(size: settings.counterSize.fontSize, weight: .bold, design: .rounded))
+                    .foregroundColor(rowColor)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.25, dampingFraction: 0.7), value: store.rowCount)
             }
-            .frame(minWidth: 52)
+            .frame(minWidth: 44)
             .padding(.horizontal, 6)
 
-            Divider().frame(height: 36)
+            Divider().frame(height: pillHeight)
 
-            Button(action: { withAnimation { store.incrementRow() } }) {
+            Button { withAnimation { store.incrementRow() } } label: {
                 Image(systemName: "plus")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 36, height: 36)
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: pillHeight, height: pillHeight)
                     .background(Color.pink.opacity(0.15))
-                    .foregroundColor(Color(red: 0.71, green: 0.33, blue: 0.49))
+                    .foregroundColor(rowColor)
             }
             .buttonStyle(.plain)
         }
-        .background(Color.pink.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.pink.opacity(0.25), lineWidth: 1.5)
-        )
         .help("Rows — right-click to set goal")
         .popover(isPresented: $showRowGoalPopover, arrowEdge: .bottom) {
             GoalInputPopover(
                 title: "Row Goal",
                 currentGoal: entry?.rowGoal,
                 inputText: $rowGoalInput,
-                onConfirm: { newGoal in
-                    entry?.rowGoal = newGoal
-                    showRowGoalPopover = false
-                },
+                onConfirm: { entry?.rowGoal = $0; showRowGoalPopover = false },
                 onDismiss: { showRowGoalPopover = false }
             )
         }
@@ -186,9 +122,7 @@ struct CounterBarView: View {
                 showRowGoalPopover = true
             }
             if entry?.rowGoal != nil {
-                Button("Clear Row Goal") {
-                    entry?.rowGoal = nil
-                }
+                Button("Clear Row Goal") { entry?.rowGoal = nil }
             }
         }
     }
@@ -196,66 +130,53 @@ struct CounterBarView: View {
     // MARK: - Stitch Pill
 
     private var stitchPill: some View {
-        HStack(spacing: 0) {
-            Button(action: { withAnimation { store.decrementStitch() } }) {
+        pillShell(color: .purple) {
+            Button { withAnimation { store.decrementStitch() } } label: {
                 Image(systemName: "minus")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 36, height: 36)
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: pillHeight, height: pillHeight)
                     .background(Color.purple.opacity(0.15))
-                    .foregroundColor(store.stitchCount == 0 ? Color.secondary : Color(red: 0.49, green: 0.30, blue: 0.80))
+                    .foregroundColor(store.stitchCount == 0 ? .secondary : stitchColor)
             }
             .buttonStyle(.plain)
             .disabled(store.stitchCount == 0)
 
-            Divider().frame(height: 36)
+            Divider().frame(height: pillHeight)
 
             VStack(spacing: 1) {
                 HStack(spacing: 3) {
-                    Text("STITCH")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(Color(red: 0.49, green: 0.30, blue: 0.80))
+                    Text("STITCH").font(.system(size: 9, weight: .semibold)).foregroundColor(stitchColor)
                     if let goal = entry?.stitchGoal {
-                        Text("/ \(goal)")
-                            .font(.system(size: 9))
-                            .foregroundColor(Color(red: 0.49, green: 0.30, blue: 0.80).opacity(0.7))
+                        Text("/ \(goal)").font(.system(size: 9)).foregroundColor(stitchColor.opacity(0.6))
                     }
                 }
                 Text("\(store.stitchCount)")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(red: 0.49, green: 0.30, blue: 0.80))
+                    .font(.system(size: settings.counterSize.fontSize, weight: .bold, design: .rounded))
+                    .foregroundColor(stitchColor)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.25, dampingFraction: 0.7), value: store.stitchCount)
             }
             .frame(minWidth: 52)
             .padding(.horizontal, 6)
 
-            Divider().frame(height: 36)
+            Divider().frame(height: pillHeight)
 
-            Button(action: { withAnimation { store.incrementStitch() } }) {
+            Button { withAnimation { store.incrementStitch() } } label: {
                 Image(systemName: "plus")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 36, height: 36)
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: pillHeight, height: pillHeight)
                     .background(Color.purple.opacity(0.15))
-                    .foregroundColor(Color(red: 0.49, green: 0.30, blue: 0.80))
+                    .foregroundColor(stitchColor)
             }
             .buttonStyle(.plain)
         }
-        .background(Color.purple.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.purple.opacity(0.25), lineWidth: 1.5)
-        )
         .help("Stitches — right-click to set goal")
         .popover(isPresented: $showStitchGoalPopover, arrowEdge: .bottom) {
             GoalInputPopover(
                 title: "Stitch Goal",
                 currentGoal: entry?.stitchGoal,
                 inputText: $stitchGoalInput,
-                onConfirm: { newGoal in
-                    entry?.stitchGoal = newGoal
-                    showStitchGoalPopover = false
-                },
+                onConfirm: { entry?.stitchGoal = $0; showStitchGoalPopover = false },
                 onDismiss: { showStitchGoalPopover = false }
             )
         }
@@ -265,75 +186,121 @@ struct CounterBarView: View {
                 showStitchGoalPopover = true
             }
             if entry?.stitchGoal != nil {
-                Button("Clear Stitch Goal") {
-                    entry?.stitchGoal = nil
-                }
+                Button("Clear Stitch Goal") { entry?.stitchGoal = nil }
             }
         }
     }
 
-    // MARK: - Progress Bar
+    // MARK: - Pill shell
+
+    @ViewBuilder
+    private func pillShell<Content: View>(color: Color, @ViewBuilder content: () -> Content) -> some View {
+        HStack(spacing: 0) { content() }
+            .background(color.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 9))
+            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(color.opacity(0.25), lineWidth: 1.5))
+    }
+
+    // MARK: - Progress bar
 
     @ViewBuilder
     private func rowProgressBar(current: Int, goal: Int) -> some View {
         let fraction = min(Double(current) / Double(goal), 1.0)
         VStack(alignment: .leading, spacing: 2) {
             Text("\(current) / \(goal) rows")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
+                .font(.system(size: 10)).foregroundColor(.secondary)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.pink.opacity(0.2))
-                        .frame(height: 6)
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.pink)
+                    RoundedRectangle(cornerRadius: 3).fill(Color.pink.opacity(0.2)).frame(height: 6)
+                    RoundedRectangle(cornerRadius: 3).fill(Color.pink)
                         .frame(width: geo.size.width * fraction, height: 6)
                         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: fraction)
                 }
             }
             .frame(height: 6)
         }
-        .frame(minWidth: 80, maxWidth: 160)
+        .frame(minWidth: 70, maxWidth: 140)
     }
 
-    // MARK: - Timer View
+    // MARK: - Timer
 
     private var timerView: some View {
         HStack(spacing: 5) {
             Image(systemName: timer.isRunning ? "timer" : "pause.circle")
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
+                .font(.system(size: 11)).foregroundColor(.secondary)
             Text(timer.displayString)
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
                 .foregroundColor(.secondary)
                 .animation(nil, value: timer.displayString)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Color(NSColor.controlBackgroundColor))
-        )
-        .help(timer.isRunning ? "Session timer — click to pause" : "Session timer — click to resume")
-        .onTapGesture {
-            timer.togglePause()
-        }
+        .padding(.horizontal, 7).padding(.vertical, 4)
+        .background(RoundedRectangle(cornerRadius: 6).fill(Color(NSColor.controlBackgroundColor)))
+        .help(timer.isRunning ? "Click to pause" : "Click to resume")
+        .onTapGesture { timer.togglePause() }
         .contextMenu {
+            Button(timer.isRunning ? "Pause" : "Resume") { timer.togglePause() }
             Button("Reset Timer") { timer.reset() }
-            Divider()
-            if timer.isRunning {
-                Button("Pause") { timer.togglePause() }
-            } else {
-                Button("Resume") { timer.togglePause() }
-            }
         }
     }
+
+    // MARK: - Reset button
+
+    private var resetButton: some View {
+        Button("Reset") { showResetConfirmation = true }
+            .buttonStyle(.bordered)
+            .tint(.red)
+            .controlSize(.small)
+    }
+
+    // MARK: - AI toggle
+
+    @available(macOS 26.0, *)
+    private var aiToggleButton: some View {
+        Button { showAIPanel.toggle() } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "sparkles").font(.system(size: 12, weight: .semibold))
+                Text("AI").font(.system(size: 11, weight: .semibold))
+            }
+            .foregroundColor(showAIPanel ? .purple : .secondary)
+            .padding(.horizontal, 7).padding(.vertical, 4)
+            .background(showAIPanel ? Color.purple.opacity(0.12) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
+        .help(showAIPanel ? "Close AI panel" : "Open AI panel")
+    }
+
+    // MARK: - Overflow menu (compact)
+
+    private var overflowMenu: some View {
+        Menu {
+            Label(timer.displayString, systemImage: "timer")
+            Divider()
+            Button(timer.isRunning ? "Pause Timer" : "Resume Timer") { timer.togglePause() }
+            Button("Reset Timer") { timer.reset() }
+            Divider()
+            Button("Reset Counters…") { showResetConfirmation = true }
+            if #available(macOS 26.0, *) {
+                Divider()
+                Button(showAIPanel ? "Close AI Panel" : "Open AI Panel") { showAIPanel.toggle() }
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.system(size: 17))
+                .foregroundColor(.secondary)
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+    }
+
+    // MARK: - Colors
+
+    private var rowColor: Color { Color(red: 0.71, green: 0.33, blue: 0.49) }
+    private var stitchColor: Color { Color(red: 0.49, green: 0.30, blue: 0.80) }
 }
 
 // MARK: - GoalInputPopover
 
-/// Small popover for entering an integer goal value.
 private struct GoalInputPopover: View {
     let title: String
     let currentGoal: Int?
@@ -341,27 +308,22 @@ private struct GoalInputPopover: View {
     let onConfirm: (Int) -> Void
     let onDismiss: () -> Void
 
-    @FocusState private var fieldFocused: Bool
+    @FocusState private var focused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.headline)
-
+            Text(title).font(.headline)
             TextField(currentGoal.map { "\($0)" } ?? "e.g. 60", text: $inputText)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 120)
-                .focused($fieldFocused)
+                .focused($focused)
                 .onSubmit { confirm() }
-
             HStack {
                 if currentGoal != nil {
-                    Button("Clear", role: .destructive, action: onDismiss)
-                        .buttonStyle(.bordered)
+                    Button("Clear", role: .destructive, action: onDismiss).buttonStyle(.bordered)
                 }
                 Spacer()
-                Button("Cancel", action: onDismiss)
-                    .buttonStyle(.bordered)
+                Button("Cancel", action: onDismiss).buttonStyle(.bordered)
                 Button("Set") { confirm() }
                     .buttonStyle(.borderedProminent)
                     .disabled(Int(inputText) == nil)
@@ -369,12 +331,10 @@ private struct GoalInputPopover: View {
         }
         .padding(16)
         .frame(width: 200)
-        .onAppear { fieldFocused = true }
+        .onAppear { focused = true }
     }
 
     private func confirm() {
-        if let value = Int(inputText), value > 0 {
-            onConfirm(value)
-        }
+        if let v = Int(inputText), v > 0 { onConfirm(v) }
     }
 }

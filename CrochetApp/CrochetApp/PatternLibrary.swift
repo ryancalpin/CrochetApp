@@ -47,7 +47,10 @@ class PatternLibrary: ObservableObject {
         if let existing = entries.first(where: { $0.resolveURL() == url }) {
             return existing.id
         }
-        guard let entry = try? PatternEntry(url: url) else { return nil }
+        guard var entry = try? PatternEntry(url: url) else { return nil }
+        let s = AppSettings.shared
+        if s.defaultRowGoal > 0 { entry.rowGoal = s.defaultRowGoal }
+        if s.defaultStitchGoal > 0 { entry.stitchGoal = s.defaultStitchGoal }
         entries.append(entry)
         save()
         return entry.id

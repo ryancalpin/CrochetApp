@@ -4,16 +4,16 @@ import Combine
 class CounterStore: ObservableObject {
     @Published var rowCount: Int = 0
     @Published var stitchCount: Int = 0
-    @Published var autoResetStitch: Bool = true
 
     weak var library: PatternLibrary?
+
+    private var autoReset: Bool { AppSettings.shared.autoResetStitches }
 
     // MARK: - Load from pattern entry
 
     func load(from entry: PatternEntry) {
         rowCount = entry.rowCount
         stitchCount = entry.stitchCount
-        autoResetStitch = entry.autoResetStitch
     }
 
     func reset() {
@@ -26,7 +26,7 @@ class CounterStore: ObservableObject {
 
     func incrementRow() {
         rowCount += 1
-        if autoResetStitch { stitchCount = 0 }
+        if autoReset { stitchCount = 0 }
         sync()
     }
 
@@ -41,7 +41,7 @@ class CounterStore: ObservableObject {
     func decrementRow() {
         guard rowCount > 0 else { return }
         rowCount -= 1
-        if autoResetStitch { stitchCount = 0 }
+        if autoReset { stitchCount = 0 }
         sync()
     }
 
@@ -65,6 +65,6 @@ class CounterStore: ObservableObject {
     // MARK: - Private
 
     private func sync() {
-        library?.updateActiveCounters(row: rowCount, stitch: stitchCount, autoReset: autoResetStitch)
+        library?.updateActiveCounters(row: rowCount, stitch: stitchCount, autoReset: autoReset)
     }
 }

@@ -14,7 +14,6 @@ struct CrochetAppApp: App {
                     store.library = library
                 }
         }
-        .windowResizability(.contentSize)
         .commands {
             CommandGroup(replacing: .newItem) {}
             CommandGroup(after: .help) {
@@ -24,6 +23,10 @@ struct CrochetAppApp: App {
                 }
                 .keyboardShortcut(.delete, modifiers: .command)
             }
+        }
+
+        Settings {
+            SettingsView()
         }
     }
 }
