@@ -16,7 +16,7 @@ struct PatternLibraryView: View {
     @State private var showAddTag = false
     @State private var tagTargetID: UUID? = nil
 
-    private var accentColor: Color { settings.pillColorScheme.rowColor }
+    private var accentColor: Color { settings.rowColor }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -519,17 +519,3 @@ struct FlowLayout: Layout {
     }
 }
 
-// MARK: - Color hex extension
-
-extension Color {
-    init?(hex: String) {
-        var h = hex.trimmingCharacters(in: .whitespaces)
-        if h.hasPrefix("#") { h = String(h.dropFirst()) }
-        guard h.count == 6, let val = UInt64(h, radix: 16) else { return nil }
-        self.init(
-            red: Double((val >> 16) & 0xFF) / 255,
-            green: Double((val >> 8) & 0xFF) / 255,
-            blue: Double(val & 0xFF) / 255
-        )
-    }
-}

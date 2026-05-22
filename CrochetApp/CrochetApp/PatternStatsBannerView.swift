@@ -7,7 +7,7 @@ struct PatternStatsBannerView: View {
     var aiTotalRows: String? = nil
 
     @ObservedObject private var settings = AppSettings.shared
-    private var rowColor: Color { settings.pillColorScheme.rowColor }
+    private var rowColor: Color { settings.rowColor }
 
     var body: some View {
         HStack(spacing: 12) {

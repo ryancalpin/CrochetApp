@@ -211,7 +211,7 @@ struct MarkdownConverter {
     }
 
     // MARK: - Full HTML Document
-    static func htmlDocument(body: String, title: String = "Crochet Pattern") -> String {
+    static func htmlDocument(body: String, title: String = "Crochet Pattern", accentHex: String = "#7B6FA0") -> String {
         return """
         <!DOCTYPE html>
         <html lang="en">
@@ -223,25 +223,25 @@ struct MarkdownConverter {
           :root {
             --bg: #fafaf8;
             --fg: #2c2c2e;
-            --accent: #7B6FA0;
-            --accent-light: #f0ecfd;
+            --accent: \(accentHex);
+            --accent-light: #f0f0ee;
             --border: #e0e0e0;
             --code-bg: #f0f0f0;
-            --blockquote-bg: #f5f2fd;
-            --link: #7B6FA0;
-            --h1: #5a4e82;
+            --blockquote-bg: #f2f2f0;
+            --link: \(accentHex);
+            --h1: \(accentHex);
           }
           @media (prefers-color-scheme: dark) {
             :root {
-              --bg: #191620;
-              --fg: #f0eaf5;
-              --accent: #B3A8E8;
-              --accent-light: #2a2538;
-              --border: #38324a;
-              --code-bg: #211d2a;
-              --blockquote-bg: #211d2a;
-              --link: #B3A8E8;
-              --h1: #B3A8E8;
+              --bg: #1e1e1e;
+              --fg: #f0f0f0;
+              --accent: \(accentHex);
+              --accent-light: #2a2a2a;
+              --border: #3a3a3a;
+              --code-bg: #252525;
+              --blockquote-bg: #252525;
+              --link: \(accentHex);
+              --h1: \(accentHex);
             }
           }
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -432,7 +432,7 @@ struct MarkdownWebView: NSViewRepresentable {
               noteBtn.id = '__notebtn';
               noteBtn.textContent = '✎';
               noteBtn.title = 'Add note';
-              noteBtn.style.cssText = 'position:fixed;background:rgba(181,85,126,0.82);color:white;' +
+              noteBtn.style.cssText = 'position:fixed;background:var(--accent);opacity:0.85;color:white;' +
                   'width:20px;height:20px;border-radius:50%;font-size:11px;display:none;' +
                   'align-items:center;justify-content:center;cursor:pointer;z-index:9000;' +
                   'box-shadow:0 1px 4px rgba(0,0,0,0.3);user-select:none;line-height:1;';
@@ -611,6 +611,7 @@ struct MarkdownView: View {
     var scrollToRow: Int = 0
     var abbreviationDict: [String: String] = [:]
 
+    @ObservedObject private var settings = AppSettings.shared
     @State private var markdownContent: String = ""
     @State private var htmlContent: String = ""
     @State private var isLoading: Bool = false
@@ -660,9 +661,23 @@ struct MarkdownView: View {
         .onChange(of: fileURL) { newURL in
             loadFile(url: newURL)
         }
+        .onChange(of: settings.rowColorHex) { _ in
+            // Regenerate HTML so CSS accent color reflects the new theme color.
+            reloadHTML()
+        }
         .onAppear {
             loadFile(url: fileURL)
         }
+    }
+
+    private func reloadHTML() {
+        guard !markdownContent.isEmpty, let url = fileURL else { return }
+        let body = MarkdownConverter.convert(markdownContent)
+        htmlContent = MarkdownConverter.htmlDocument(
+            body: body,
+            title: url.deletingPathExtension().lastPathComponent,
+            accentHex: settings.rowColorHex
+        )
     }
 
     private func loadFile(url: URL?) {
@@ -676,6 +691,8 @@ struct MarkdownView: View {
         isLoading = true
         errorMessage = nil
 
+        let accentHex = settings.rowColorHex
+
         DispatchQueue.global(qos: .userInitiated).async {
             do {
                 // Request access for sandboxed apps
@@ -686,7 +703,8 @@ struct MarkdownView: View {
                 let body = MarkdownConverter.convert(content)
                 let fullHTML = MarkdownConverter.htmlDocument(
                     body: body,
-                    title: url.deletingPathExtension().lastPathComponent
+                    title: url.deletingPathExtension().lastPathComponent,
+                    accentHex: accentHex
                 )
 
                 DispatchQueue.main.async {

@@ -160,13 +160,13 @@ struct CounterBarView: View {
     // MARK: - Repeat Pill
 
     private var repeatPill: some View {
-        pillShell(color: .teal) {
+        pillShell(color: repeatColor) {
             Button { withAnimation { store.decrementRepeat() } } label: {
                 Image(systemName: "minus")
                     .font(.system(size: 13, weight: .semibold))
                     .frame(width: pillHeight, height: pillHeight)
-                    .background(Color.teal.opacity(0.15))
-                    .foregroundColor(store.repeatCount == 0 ? .secondary : .teal)
+                    .background(repeatColor.opacity(0.15))
+                    .foregroundColor(store.repeatCount == 0 ? .secondary : repeatColor)
             }
             .buttonStyle(.plain)
             .disabled(store.repeatCount == 0)
@@ -174,10 +174,10 @@ struct CounterBarView: View {
             Divider().frame(height: pillHeight)
 
             VStack(spacing: 1) {
-                Text("REPEAT").font(.system(size: 9, weight: .semibold)).foregroundColor(.teal)
+                Text("REPEAT").font(.system(size: 9, weight: .semibold)).foregroundColor(repeatColor)
                 Text("\(store.repeatCount)")
                     .font(.system(size: settings.counterSize.fontSize, weight: .bold, design: .rounded))
-                    .foregroundColor(.teal)
+                    .foregroundColor(repeatColor)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.25, dampingFraction: 0.7), value: store.repeatCount)
             }
@@ -190,8 +190,8 @@ struct CounterBarView: View {
                 Image(systemName: "plus")
                     .font(.system(size: 13, weight: .semibold))
                     .frame(width: pillHeight, height: pillHeight)
-                    .background(Color.teal.opacity(0.15))
-                    .foregroundColor(.teal)
+                    .background(repeatColor.opacity(0.15))
+                    .foregroundColor(repeatColor)
             }
             .buttonStyle(.plain)
         }
@@ -393,8 +393,9 @@ struct CounterBarView: View {
 
     // MARK: - Colors
 
-    private var rowColor: Color { settings.pillColorScheme.rowColor }
-    private var stitchColor: Color { settings.pillColorScheme.stitchColor }
+    private var rowColor: Color    { settings.rowColor }
+    private var stitchColor: Color { settings.stitchColor }
+    private var repeatColor: Color { settings.repeatColor }
 }
 
 // MARK: - GoalInputPopover

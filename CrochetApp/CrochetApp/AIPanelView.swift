@@ -106,35 +106,38 @@ struct AIPanelView: View {
     }
 
     private func loadAll() {
-        // Use cached AI results from the entry where available; only call model for missing ones.
-        if let s = entry.aiSummary {
+        // Always read the freshest copy from the library to avoid a stale value-type snapshot.
+        // entry.id is stable; library.entries has the authoritative persisted cache.
+        let e = library.entries.first(where: { $0.id == entry.id }) ?? entry
+
+        if let s = e.aiSummary {
             summary = s
             bannerTotalRows = s.totalRows == "Unknown" ? nil : s.totalRows
         } else {
             loadSummary()
         }
 
-        if let a = entry.aiAbbreviations {
+        if let a = e.aiAbbreviations {
             abbreviationList = a
             abbreviationDict = Dictionary(uniqueKeysWithValues: a.entries.map { ($0.abbreviation, $0.meaning) })
         } else {
             loadAbbreviations()
         }
 
-        if let m = entry.aiMaterials {
+        if let m = e.aiMaterials {
             materials = m
         } else {
             loadMaterials()
         }
 
-        if let d = entry.aiDifficulty {
+        if let d = e.aiDifficulty {
             difficulty = d
             bannerDifficulty = d
         } else {
             loadDifficulty()
         }
 
-        if let t = entry.aiTimeEstimate {
+        if let t = e.aiTimeEstimate {
             timeEstimate = t
         } else {
             loadTimeEstimate()
