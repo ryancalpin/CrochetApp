@@ -55,7 +55,7 @@ struct CounterBarView: View {
             .frame(maxHeight: .infinity, alignment: .center)
         }
         .frame(height: pillHeight + 16)
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color.surface)
         .overlay(alignment: .bottom) { Divider() }
         .confirmationDialog(
             "Reset counters?",
@@ -312,7 +312,7 @@ struct CounterBarView: View {
                 .animation(nil, value: timer.displayString)
         }
         .padding(.horizontal, 7).padding(.vertical, 4)
-        .background(RoundedRectangle(cornerRadius: 6).fill(Color(NSColor.controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 6).fill(Color.surfaceRaised))
         .help(timer.isRunning ? "Click to pause" : "Click to resume")
         .onTapGesture { timer.togglePause() }
         .contextMenu {

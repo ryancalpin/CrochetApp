@@ -67,7 +67,7 @@ struct AIPanelView: View {
                 .padding(.vertical, 4)
             }
         }
-        .background(Color(NSColor.controlBackgroundColor))
+        .background(Color.surfaceRaised)
         .task(id: entry.id) {
             resetAll()
             loadAll()
@@ -88,7 +88,7 @@ struct AIPanelView: View {
             .buttonStyle(.plain).help("Close AI panel")
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color.surface)
     }
 
     private var loadingPlaceholder: some View {

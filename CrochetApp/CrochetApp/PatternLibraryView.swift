@@ -133,7 +133,7 @@ struct PatternLibraryView: View {
             .buttonStyle(.plain).foregroundColor(accentColor).help("Add a pattern file")
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(Color(NSColor.controlBackgroundColor))
+        .background(Color.surfaceRaised)
     }
 
     // MARK: - Search bar
@@ -151,7 +151,7 @@ struct PatternLibraryView: View {
             }
         }
         .padding(.horizontal, 10).padding(.vertical, 6)
-        .background(Color(NSColor.controlBackgroundColor))
+        .background(Color.surfaceRaised)
         .overlay(alignment: .bottom) { Divider() }
     }
 
@@ -209,7 +209,7 @@ struct PatternLibraryView: View {
                             .font(.system(size: 11))
                             .foregroundColor(isActive ? accentColor : .secondary)
                             .padding(.horizontal, 6).padding(.vertical, 1)
-                            .background(isActive ? accentColor.opacity(0.12) : Color(NSColor.controlBackgroundColor))
+                            .background(isActive ? accentColor.opacity(0.12) : Color.surfaceRaised)
                             .cornerRadius(8)
                     }
 

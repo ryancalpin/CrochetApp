@@ -38,7 +38,7 @@ struct PatternStatsBannerView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 5)
-        .background(Color(NSColor.controlBackgroundColor))
+        .background(Color.surfaceRaised)
         .overlay(alignment: .bottom) { Divider() }
     }
 

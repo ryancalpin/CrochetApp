@@ -96,7 +96,7 @@ struct ContentView: View {
 
     private var resizableDivider: some View {
         Rectangle()
-            .fill(Color(NSColor.separatorColor))
+            .fill(Color.dividerToken)
             .frame(width: 1)
             .overlay(
                 Color.clear

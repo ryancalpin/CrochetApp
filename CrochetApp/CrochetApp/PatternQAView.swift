@@ -32,7 +32,7 @@ struct PatternQAView: View {
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .padding(8)
-                            .background(Color(NSColor.controlBackgroundColor))
+                            .background(Color.surfaceRaised)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                         }
                     }
@@ -52,7 +52,7 @@ struct PatternQAView: View {
                     .textFieldStyle(.plain)
                     .font(.system(size: 11))
                     .padding(6)
-                    .background(Color(NSColor.controlBackgroundColor))
+                    .background(Color.surfaceRaised)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .onSubmit { askQuestion() }
                     .disabled(isAsking)

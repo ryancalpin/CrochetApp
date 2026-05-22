@@ -184,7 +184,7 @@ struct SettingsView: View {
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 7)
                 .padding(.vertical, 2)
-                .background(Color(NSColor.controlBackgroundColor))
+                .background(Color.surfaceRaised)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
                 .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(Color.secondary.opacity(0.2), lineWidth: 1))
         }

@@ -28,6 +28,8 @@
 		OO5555555555555555555555 /* PatternContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OO6666666666666666666666 /* PatternContentView.swift */; };
 		BB2222222222222222222222 /* PatternStatsBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1111111111111111111111 /* PatternStatsBannerView.swift */; };
 		7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */; };
+		DS1111111111111111111111 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS2222222222222222222222 /* Theme.swift */; };
+		DS3333333333333333333333 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS4444444444444444444444 /* Typography.swift */; };
 		/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +57,8 @@
 		BB1111111111111111111111 /* PatternStatsBannerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternStatsBannerView.swift; sourceTree = "<group>"; };
 		AA00000100000000000000AB /* CrochetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrochetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
+		DS2222222222222222222222 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		DS4444444444444444444444 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +81,7 @@
 				AA000001000000000000005B /* CounterStore.swift */,
 				BB1234567890ABCDEF123456 /* PatternEntry.swift */,
 				9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */,
+				DS5555555555555555555555 /* DesignSystem */,
 				CC9876543210FEDCBA123456 /* PatternLibrary.swift */,
 				DD2222222222222222222222 /* PatternLibraryView.swift */,
 				EE4444444444444444444444 /* CounterBarView.swift */,
@@ -96,6 +101,15 @@
 				AA000001000000000000008B /* CrochetApp.entitlements */,
 			);
 			path = CrochetApp;
+			sourceTree = "<group>";
+		};
+		DS5555555555555555555555 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				DS2222222222222222222222 /* Theme.swift */,
+				DS4444444444444444444444 /* Typography.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 		AA00000100000000000000DB /* Products */ = {
@@ -189,6 +203,8 @@
 				AA000001000000000000005A /* CounterStore.swift in Sources */,
 				BB1234567890ABCDEF654321 /* PatternEntry.swift in Sources */,
 				7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */,
+				DS1111111111111111111111 /* Theme.swift in Sources */,
+				DS3333333333333333333333 /* Typography.swift in Sources */,
 				CC9876543210FEDCBA654321 /* PatternLibrary.swift in Sources */,
 				DD1111111111111111111111 /* PatternLibraryView.swift in Sources */,
 				EE3333333333333333333333 /* CounterBarView.swift in Sources */,
@@ -213,7 +229,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -276,7 +292,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
