@@ -45,13 +45,18 @@ enum RowFollow {
         return texts.indices.filter { matches(texts[$0], row: row) }
     }
 
-    /// Forward-biased pick: the first match AFTER the anchor — so counting up follows
-    /// forward and resetting to 1 for a new part jumps into that part rather than back
-    /// to part 1. If there is no match after the anchor (e.g. stepping backward within
-    /// a part, or the last part), fall back to the closest match at/before the anchor.
+    /// Picks which matching element to scroll to, biased toward forward progress:
+    /// 1. If the current element (anchor) still refers to this row — e.g. counting 8,9,10
+    ///    while sitting on a "Rnds 7–12" range block — stay put (don't jump to a later
+    ///    part that happens to share those numbers).
+    /// 2. Otherwise the first match AFTER the anchor — so resetting to 1 for a new part
+    ///    advances into that part instead of snapping back to part 1.
+    /// 3. Otherwise the last match at/before the anchor (stepping back, or the last part).
     /// Returns nil when the row number appears nowhere.
     static func targetIndex(in texts: [String], row: Int, anchor: Int) -> Int? {
         let matches = matchingIndices(in: texts, row: row)
+        guard !matches.isEmpty else { return nil }
+        if anchor >= 0, matches.contains(anchor) { return anchor }
         if let forward = matches.first(where: { $0 > anchor }) { return forward }
         return matches.last
     }

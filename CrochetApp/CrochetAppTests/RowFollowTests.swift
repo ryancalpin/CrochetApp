@@ -64,6 +64,30 @@ final class RowFollowTests: XCTestCase {
         XCTAssertEqual(anchor, 6, "Rnd 8 advances past the range")
     }
 
+    func testCountingWithinRangeStaysDespiteLaterOverlappingRange() throws {
+        // Mirrors the real heart: Part 1 has "Rnds 7–12" and a later part has
+        // "Rnds 2–12" — both match rows 8–12. Counting within Part 1's range must STAY
+        // on Part 1, not jump to the later part.
+        let texts = [
+            "PART 1",            // 0
+            "Rnd 6: sc",         // 1
+            "Rnds 7–12: sc",     // 2  Part 1 range
+            "Rnd 13: dec",       // 3
+            "PART 3 — Aortic",   // 4
+            "Rnd 1: MR",         // 5
+            "Rnds 2–12: sc"      // 6  Part 3 range (also matches 7–12)
+        ]
+        var anchor = 1 // at Rnd 6 in Part 1
+        anchor = try XCTUnwrap(RowFollow.targetIndex(in: texts, row: 7, anchor: anchor))
+        XCTAssertEqual(anchor, 2, "Rnd 7 enters Part 1's range")
+        for r in 8...12 {
+            anchor = try XCTUnwrap(RowFollow.targetIndex(in: texts, row: r, anchor: anchor))
+            XCTAssertEqual(anchor, 2, "Rnd \(r) must stay on Part 1's range, not jump to Part 3's")
+        }
+        anchor = try XCTUnwrap(RowFollow.targetIndex(in: texts, row: 13, anchor: anchor))
+        XCTAssertEqual(anchor, 3, "Rnd 13 advances to Part 1's next round")
+    }
+
     func testRangeWithPlainHyphen() {
         // Accept hyphen-minus as well as en/em dashes.
         let texts = ["Rows 10-12: sc across"]
