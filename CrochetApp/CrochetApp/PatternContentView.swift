@@ -37,22 +37,24 @@ struct PDFKitView: NSViewRepresentable {
         view.autoScales = true
         view.displayMode = .singlePageContinuous
         view.displayDirection = .vertical
-        view.backgroundColor = NSColor(named: "viewBackground") ?? .windowBackgroundColor
+        view.backgroundColor = NSColor(named: "surface") ?? .windowBackgroundColor
         context.coordinator.pdfView = view
+        context.coordinator.accessing = url.startAccessingSecurityScopedResource()
+        view.document = PDFDocument(url: url)
+        context.coordinator.loadedURL = url
         return view
     }
 
     func updateNSView(_ pdfView: PDFView, context: Context) {
-        let accessing = url.startAccessingSecurityScopedResource()
-        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-
-        // Only reload document if URL changed
-        if context.coordinator.lastURL != url {
-            context.coordinator.lastURL = url
-            context.coordinator.lastScrollRow = 0
-            if let doc = PDFDocument(url: url) {
-                pdfView.document = doc
+        // Only reload document if URL changed, re-scoping security access.
+        if context.coordinator.loadedURL != url {
+            if context.coordinator.accessing, let old = context.coordinator.loadedURL {
+                old.stopAccessingSecurityScopedResource()
             }
+            context.coordinator.accessing = url.startAccessingSecurityScopedResource()
+            pdfView.document = PDFDocument(url: url)
+            context.coordinator.loadedURL = url
+            context.coordinator.lastScrollRow = 0
         }
 
         // Scroll to row if changed
@@ -70,11 +72,18 @@ struct PDFKitView: NSViewRepresentable {
         }
     }
 
+    static func dismantleNSView(_ pdfView: PDFView, coordinator: Coordinator) {
+        if coordinator.accessing, let u = coordinator.loadedURL {
+            u.stopAccessingSecurityScopedResource()
+        }
+    }
+
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     final class Coordinator {
         weak var pdfView: PDFView?
-        var lastURL: URL?
+        var accessing = false
+        var loadedURL: URL?
         var lastScrollRow: Int = 0
     }
 }
