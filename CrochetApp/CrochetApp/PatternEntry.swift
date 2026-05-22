@@ -24,11 +24,18 @@ struct PatternEntry: Codable, Identifiable {
     var annotations: [String: String]
 
     // MARK: - AI Cache
+    /// Bump when the AI generation logic changes so stale cached insights are
+    /// invalidated and regenerated. v1 = FoundationModels guided generation
+    /// (replaced the old free-text parsing that produced "Unknown" fields).
+    static let currentAISchemaVersion = 1
+
     var aiSummary: PatternSummary?
     var aiAbbreviations: AbbreviationList?
     var aiMaterials: MaterialsBreakdown?
     var aiDifficulty: String?
     var aiTimeEstimate: String?
+    /// Schema version that produced the cached AI insights above (0 = legacy/unknown).
+    var aiSchemaVersion: Int
 
     init(url: URL) throws {
         self.id = UUID()
@@ -54,6 +61,7 @@ struct PatternEntry: Codable, Identifiable {
         self.aiMaterials = nil
         self.aiDifficulty = nil
         self.aiTimeEstimate = nil
+        self.aiSchemaVersion = Self.currentAISchemaVersion
     }
 
     // Custom decode to handle optional new fields gracefully
@@ -79,6 +87,7 @@ struct PatternEntry: Codable, Identifiable {
         aiMaterials = try c.decodeIfPresent(MaterialsBreakdown.self, forKey: .aiMaterials)
         aiDifficulty = try c.decodeIfPresent(String.self, forKey: .aiDifficulty)
         aiTimeEstimate = try c.decodeIfPresent(String.self, forKey: .aiTimeEstimate)
+        aiSchemaVersion = try c.decodeIfPresent(Int.self, forKey: .aiSchemaVersion) ?? 0
     }
 
     func resolveURL() -> URL? {
