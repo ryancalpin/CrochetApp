@@ -73,6 +73,7 @@ struct PatternQAView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(question.isEmpty)
+                    .accessibilityLabel("Send question")
                 }
             }
         }

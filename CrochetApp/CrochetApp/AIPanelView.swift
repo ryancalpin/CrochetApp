@@ -83,6 +83,7 @@ struct AIPanelView: View {
                     .foregroundColor(.secondary).font(.system(size: 16))
             }
             .buttonStyle(.plain).help("Close AI panel")
+            .accessibilityLabel("Close AI panel")
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
         .background(Color.surface)

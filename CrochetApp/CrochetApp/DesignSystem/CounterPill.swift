@@ -14,6 +14,7 @@ struct CounterPill: View {
     var body: some View {
         HStack(spacing: 0) {
             stepButton(systemName: "minus", enabled: value > 0, action: onDecrement)
+                .accessibilityLabel("Decrease \(label)")
             Divider().frame(height: pillHeight)
             VStack(spacing: 1) {
                 HStack(spacing: 3) {
@@ -27,8 +28,12 @@ struct CounterPill: View {
                     .animation(.spring(response: 0.25, dampingFraction: 0.7), value: value)
             }
             .frame(minWidth: 48).padding(.horizontal, 6)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(label)
+            .accessibilityValue("\(value)")
             Divider().frame(height: pillHeight)
             stepButton(systemName: "plus", enabled: true, action: onIncrement)
+                .accessibilityLabel("Increase \(label)")
         }
         .background(color.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 9))

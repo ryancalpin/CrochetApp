@@ -26,6 +26,7 @@ struct SectionCard<Content: View>: View {
                     Button(action: onRegenerate) {
                         Image(systemName: "arrow.clockwise").imageScale(.small).foregroundColor(.textSecondary)
                     }.buttonStyle(.plain).help("Regenerate this section")
+                    .accessibilityLabel("Regenerate \(title)")
                 }
             }
         }

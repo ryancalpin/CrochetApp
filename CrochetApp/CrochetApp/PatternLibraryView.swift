@@ -138,6 +138,7 @@ struct PatternLibraryView: View {
                 Image(systemName: "plus").font(.system(size: 16, weight: .medium))
             }
             .buttonStyle(.plain).foregroundColor(accentColor).help("Add a pattern file")
+            .accessibilityLabel("Add pattern")
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(Color.surfaceRaised)
@@ -155,6 +156,7 @@ struct PatternLibraryView: View {
                     Image(systemName: "xmark.circle.fill").font(.system(size: 12)).foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
             }
         }
         .padding(.horizontal, 10).padding(.vertical, 6)

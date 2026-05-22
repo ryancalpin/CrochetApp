@@ -244,6 +244,8 @@ struct CounterBarView: View {
         }
         .buttonStyle(.plain)
         .help(settings.audioCueEnabled ? "Row audio cue on — click to disable" : "Row audio cue off — click to enable")
+        .accessibilityLabel("Row audio cue")
+        .accessibilityValue(settings.audioCueEnabled ? "On" : "Off")
     }
 
     // MARK: - Reset button
@@ -271,6 +273,8 @@ struct CounterBarView: View {
         }
         .buttonStyle(.plain)
         .help(showAIPanel ? "Close AI panel" : "Open AI panel")
+        .accessibilityLabel("Toggle AI assistant")
+        .accessibilityValue(showAIPanel ? "Open" : "Closed")
     }
 
     // MARK: - Overflow menu (compact)
