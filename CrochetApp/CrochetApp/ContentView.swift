@@ -8,29 +8,38 @@ struct ContentView: View {
     @ObservedObject var library: PatternLibrary
     @ObservedObject var store: CounterStore
     @ObservedObject var sessionTimer: SessionTimer
+    @ObservedObject private var settings = AppSettings.shared
+
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var showAIPanel: Bool = UserDefaults.standard.aiPanelOpen
     @State private var aiPanelWidth: CGFloat = 280
     @State private var abbreviationDict: [String: String] = [:]
     @State private var patternScrollToRow: Int = 0
+    @State private var focusMode = false
 
     var body: some View {
         HStack(spacing: 0) {
             // ── Sidebar ───────────────────────────────────────────────
-            PatternLibraryView(library: library, store: store)
-                .frame(minWidth: 200, idealWidth: 220, maxWidth: 280)
-                .frame(maxHeight: .infinity)
+            if !focusMode {
+                PatternLibraryView(library: library, store: store)
+                    .frame(minWidth: 200, idealWidth: 220, maxWidth: 280)
+                    .frame(maxHeight: .infinity)
+                    .transition(.move(edge: .leading).combined(with: .opacity))
 
-            Divider()
+                Divider()
+            }
 
             // ── Detail ────────────────────────────────────────────────
             VStack(spacing: 0) {
-                CounterBarView(
-                    store: store,
-                    timer: sessionTimer,
-                    entry: activeEntryBinding,
-                    showAIPanel: $showAIPanel
-                )
+                if !focusMode {
+                    CounterBarView(
+                        store: store,
+                        timer: sessionTimer,
+                        entry: activeEntryBinding,
+                        showAIPanel: $showAIPanel
+                    )
+                }
 
                 HStack(spacing: 0) {
                     PatternContentView(
@@ -61,8 +70,47 @@ struct ContentView: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showAIPanel)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(alignment: .top) {
+                if focusMode {
+                    GlassHUD {
+                        CounterPill(
+                            label: "ROW",
+                            value: store.rowCount,
+                            goal: library.activeEntry?.rowGoal,
+                            color: settings.rowColor.legible(in: colorScheme),
+                            size: settings.counterSize,
+                            onDecrement: { store.decrementRow() },
+                            onIncrement: { store.incrementRow() }
+                        )
+                        CounterPill(
+                            label: "STITCH",
+                            value: store.stitchCount,
+                            goal: library.activeEntry?.stitchGoal,
+                            color: settings.stitchColor.legible(in: colorScheme),
+                            size: settings.counterSize,
+                            onDecrement: { store.decrementStitch() },
+                            onIncrement: { store.incrementStitch() }
+                        )
+                        if library.activeEntry?.showRepeatCounter == true {
+                            CounterPill(
+                                label: "REPEAT",
+                                value: store.repeatCount,
+                                goal: nil,
+                                color: settings.repeatColor.legible(in: colorScheme),
+                                size: settings.counterSize,
+                                onDecrement: { store.decrementRepeat() },
+                                onIncrement: { store.incrementRepeat() }
+                            )
+                        }
+                    }
+                    .padding(.top, 12)
+                }
+            }
         }
         .background(KeyboardShortcutHandler(store: store))
+        .onReceive(NotificationCenter.default.publisher(for: .toggleFocusMode)) { _ in
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) { focusMode.toggle() }
+        }
         .onChange(of: showAIPanel) { UserDefaults.standard.aiPanelOpen = $0 }
         .onChange(of: library.activeEntry?.displayName) { name in
             NSApp.mainWindow?.title = name ?? "Crochet Helper"

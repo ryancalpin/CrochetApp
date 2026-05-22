@@ -16,6 +16,12 @@ struct CrochetAppApp: App {
         }
         .commands {
             CommandGroup(replacing: .newItem) {}
+            CommandGroup(after: .sidebar) {
+                Button("Toggle Focus Mode") {
+                    NotificationCenter.default.post(name: .toggleFocusMode, object: nil)
+                }
+                .keyboardShortcut("f", modifiers: [.control, .command])
+            }
             CommandGroup(after: .help) {
                 Divider()
                 Button("Reset All Counters…") {
@@ -33,4 +39,5 @@ struct CrochetAppApp: App {
 
 extension Notification.Name {
     static let resetAllCounters = Notification.Name("CrochetApp.resetAllCounters")
+    static let toggleFocusMode = Notification.Name("CrochetApp.toggleFocusMode")
 }
