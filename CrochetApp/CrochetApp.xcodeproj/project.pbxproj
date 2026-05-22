@@ -30,6 +30,9 @@
 		7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */; };
 		DS1111111111111111111111 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS2222222222222222222222 /* Theme.swift */; };
 		DS3333333333333333333333 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS4444444444444444444444 /* Typography.swift */; };
+		DSCP11111111111111111111 /* CounterPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSCP22222222222222222222 /* CounterPill.swift */; };
+		DSHU11111111111111111111 /* GlassHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSHU22222222222222222222 /* GlassHUD.swift */; };
+		DSSC11111111111111111111 /* SectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSSC22222222222222222222 /* SectionCard.swift */; };
 		/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +62,9 @@
 		9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
 		DS2222222222222222222222 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		DS4444444444444444444444 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		DSCP22222222222222222222 /* CounterPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPill.swift; sourceTree = "<group>"; };
+		DSHU22222222222222222222 /* GlassHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassHUD.swift; sourceTree = "<group>"; };
+		DSSC22222222222222222222 /* SectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionCard.swift; sourceTree = "<group>"; };
 		/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +114,9 @@
 			children = (
 				DS2222222222222222222222 /* Theme.swift */,
 				DS4444444444444444444444 /* Typography.swift */,
+				DSCP22222222222222222222 /* CounterPill.swift */,
+				DSHU22222222222222222222 /* GlassHUD.swift */,
+				DSSC22222222222222222222 /* SectionCard.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -205,6 +214,9 @@
 				7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */,
 				DS1111111111111111111111 /* Theme.swift in Sources */,
 				DS3333333333333333333333 /* Typography.swift in Sources */,
+				DSCP11111111111111111111 /* CounterPill.swift in Sources */,
+				DSHU11111111111111111111 /* GlassHUD.swift in Sources */,
+				DSSC11111111111111111111 /* SectionCard.swift in Sources */,
 				CC9876543210FEDCBA654321 /* PatternLibrary.swift in Sources */,
 				DD1111111111111111111111 /* PatternLibraryView.swift in Sources */,
 				EE3333333333333333333333 /* CounterBarView.swift in Sources */,

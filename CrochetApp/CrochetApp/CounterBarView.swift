@@ -9,6 +9,8 @@ struct CounterBarView: View {
 
     @ObservedObject private var settings = AppSettings.shared
 
+    @Environment(\.colorScheme) private var colorScheme
+
     @State private var showRowGoalPopover    = false
     @State private var showStitchGoalPopover = false
     @State private var rowGoalInput:    String = ""
@@ -84,46 +86,15 @@ struct CounterBarView: View {
     // MARK: - Row Pill
 
     private var rowPill: some View {
-        pillShell(color: rowColor) {
-            Button { withAnimation { store.decrementRow() } } label: {
-                Image(systemName: "minus")
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: pillHeight, height: pillHeight)
-                    .background(rowColor.opacity(0.15))
-                    .foregroundColor(store.rowCount == 0 ? .secondary : rowColor)
-            }
-            .buttonStyle(.plain)
-            .disabled(store.rowCount == 0)
-
-            Divider().frame(height: pillHeight)
-
-            VStack(spacing: 1) {
-                HStack(spacing: 3) {
-                    Text("ROW").font(.system(size: 9, weight: .semibold)).foregroundColor(rowColor)
-                    if let goal = entry?.rowGoal {
-                        Text("/ \(goal)").font(.system(size: 9)).foregroundColor(rowColor.opacity(0.6))
-                    }
-                }
-                Text("\(store.rowCount)")
-                    .font(.system(size: settings.counterSize.fontSize, weight: .bold, design: .rounded))
-                    .foregroundColor(rowColor)
-                    .contentTransition(.numericText())
-                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: store.rowCount)
-            }
-            .frame(minWidth: 44)
-            .padding(.horizontal, 6)
-
-            Divider().frame(height: pillHeight)
-
-            Button { withAnimation { store.incrementRow() } } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: pillHeight, height: pillHeight)
-                    .background(rowColor.opacity(0.15))
-                    .foregroundColor(rowColor)
-            }
-            .buttonStyle(.plain)
-        }
+        CounterPill(
+            label: "ROW",
+            value: store.rowCount,
+            goal: entry?.rowGoal,
+            color: settings.rowColor.legible(in: colorScheme),
+            size: settings.counterSize,
+            onDecrement: { store.decrementRow() },
+            onIncrement: { store.incrementRow() }
+        )
         .help("Rows — right-click to set goal")
         .popover(isPresented: $showRowGoalPopover, arrowEdge: .bottom) {
             GoalInputPopover(
@@ -131,6 +102,7 @@ struct CounterBarView: View {
                 currentGoal: entry?.rowGoal,
                 inputText: $rowGoalInput,
                 onConfirm: { entry?.rowGoal = $0; showRowGoalPopover = false },
+                onClear: { entry?.rowGoal = nil; showRowGoalPopover = false },
                 onDismiss: { showRowGoalPopover = false }
             )
         }
@@ -160,41 +132,15 @@ struct CounterBarView: View {
     // MARK: - Repeat Pill
 
     private var repeatPill: some View {
-        pillShell(color: repeatColor) {
-            Button { withAnimation { store.decrementRepeat() } } label: {
-                Image(systemName: "minus")
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: pillHeight, height: pillHeight)
-                    .background(repeatColor.opacity(0.15))
-                    .foregroundColor(store.repeatCount == 0 ? .secondary : repeatColor)
-            }
-            .buttonStyle(.plain)
-            .disabled(store.repeatCount == 0)
-
-            Divider().frame(height: pillHeight)
-
-            VStack(spacing: 1) {
-                Text("REPEAT").font(.system(size: 9, weight: .semibold)).foregroundColor(repeatColor)
-                Text("\(store.repeatCount)")
-                    .font(.system(size: settings.counterSize.fontSize, weight: .bold, design: .rounded))
-                    .foregroundColor(repeatColor)
-                    .contentTransition(.numericText())
-                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: store.repeatCount)
-            }
-            .frame(minWidth: 44)
-            .padding(.horizontal, 6)
-
-            Divider().frame(height: pillHeight)
-
-            Button { withAnimation { store.incrementRepeat() } } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: pillHeight, height: pillHeight)
-                    .background(repeatColor.opacity(0.15))
-                    .foregroundColor(repeatColor)
-            }
-            .buttonStyle(.plain)
-        }
+        CounterPill(
+            label: "REPEAT",
+            value: store.repeatCount,
+            goal: nil,
+            color: settings.repeatColor.legible(in: colorScheme),
+            size: settings.counterSize,
+            onDecrement: { store.decrementRepeat() },
+            onIncrement: { store.incrementRepeat() }
+        )
         .help("Repeat counter — right-click to reset or hide")
         .contextMenu {
             Button("Reset Repeat") { showRepeatResetConfirmation = true }
@@ -208,46 +154,15 @@ struct CounterBarView: View {
     // MARK: - Stitch Pill
 
     private var stitchPill: some View {
-        pillShell(color: stitchColor) {
-            Button { withAnimation { store.decrementStitch() } } label: {
-                Image(systemName: "minus")
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: pillHeight, height: pillHeight)
-                    .background(stitchColor.opacity(0.15))
-                    .foregroundColor(store.stitchCount == 0 ? .secondary : stitchColor)
-            }
-            .buttonStyle(.plain)
-            .disabled(store.stitchCount == 0)
-
-            Divider().frame(height: pillHeight)
-
-            VStack(spacing: 1) {
-                HStack(spacing: 3) {
-                    Text("STITCH").font(.system(size: 9, weight: .semibold)).foregroundColor(stitchColor)
-                    if let goal = entry?.stitchGoal {
-                        Text("/ \(goal)").font(.system(size: 9)).foregroundColor(stitchColor.opacity(0.6))
-                    }
-                }
-                Text("\(store.stitchCount)")
-                    .font(.system(size: settings.counterSize.fontSize, weight: .bold, design: .rounded))
-                    .foregroundColor(stitchColor)
-                    .contentTransition(.numericText())
-                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: store.stitchCount)
-            }
-            .frame(minWidth: 52)
-            .padding(.horizontal, 6)
-
-            Divider().frame(height: pillHeight)
-
-            Button { withAnimation { store.incrementStitch() } } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: pillHeight, height: pillHeight)
-                    .background(stitchColor.opacity(0.15))
-                    .foregroundColor(stitchColor)
-            }
-            .buttonStyle(.plain)
-        }
+        CounterPill(
+            label: "STITCH",
+            value: store.stitchCount,
+            goal: entry?.stitchGoal,
+            color: settings.stitchColor.legible(in: colorScheme),
+            size: settings.counterSize,
+            onDecrement: { store.decrementStitch() },
+            onIncrement: { store.incrementStitch() }
+        )
         .help("Stitches — right-click to set goal")
         .popover(isPresented: $showStitchGoalPopover, arrowEdge: .bottom) {
             GoalInputPopover(
@@ -255,6 +170,7 @@ struct CounterBarView: View {
                 currentGoal: entry?.stitchGoal,
                 inputText: $stitchGoalInput,
                 onConfirm: { entry?.stitchGoal = $0; showStitchGoalPopover = false },
+                onClear: { entry?.stitchGoal = nil; showStitchGoalPopover = false },
                 onDismiss: { showStitchGoalPopover = false }
             )
         }
@@ -269,28 +185,19 @@ struct CounterBarView: View {
         }
     }
 
-    // MARK: - Pill shell
-
-    @ViewBuilder
-    private func pillShell<Content: View>(color: Color, @ViewBuilder content: () -> Content) -> some View {
-        HStack(spacing: 0) { content() }
-            .background(color.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 9))
-            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(color.opacity(0.25), lineWidth: 1.5))
-    }
-
     // MARK: - Progress bar
 
     @ViewBuilder
     private func rowProgressBar(current: Int, goal: Int) -> some View {
         let fraction = min(Double(current) / Double(goal), 1.0)
+        let fill = settings.rowColor.legible(in: colorScheme)
         VStack(alignment: .leading, spacing: 2) {
             Text("\(current) / \(goal) rows")
-                .font(.system(size: 10)).foregroundColor(.secondary)
+                .font(.system(size: 10)).foregroundColor(.textSecondary)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3).fill(rowColor.opacity(0.2)).frame(height: 6)
-                    RoundedRectangle(cornerRadius: 3).fill(rowColor)
+                    RoundedRectangle(cornerRadius: 3).fill(fill.opacity(0.2)).frame(height: 6)
+                    RoundedRectangle(cornerRadius: 3).fill(fill)
                         .frame(width: geo.size.width * fraction, height: 6)
                         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: fraction)
                 }
@@ -393,9 +300,7 @@ struct CounterBarView: View {
 
     // MARK: - Colors
 
-    private var rowColor: Color    { settings.rowColor }
-    private var stitchColor: Color { settings.stitchColor }
-    private var repeatColor: Color { settings.repeatColor }
+    private var rowColor: Color { settings.rowColor }
 }
 
 // MARK: - GoalInputPopover
@@ -405,6 +310,7 @@ private struct GoalInputPopover: View {
     let currentGoal: Int?
     @Binding var inputText: String
     let onConfirm: (Int) -> Void
+    let onClear: () -> Void
     let onDismiss: () -> Void
 
     @FocusState private var focused: Bool
@@ -419,7 +325,7 @@ private struct GoalInputPopover: View {
                 .onSubmit { confirm() }
             HStack {
                 if currentGoal != nil {
-                    Button("Clear", role: .destructive, action: onDismiss).buttonStyle(.bordered)
+                    Button("Clear", role: .destructive, action: onClear).buttonStyle(.bordered)
                 }
                 Spacer()
                 Button("Cancel", action: onDismiss).buttonStyle(.bordered)
