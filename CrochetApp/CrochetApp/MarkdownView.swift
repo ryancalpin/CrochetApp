@@ -391,7 +391,6 @@ struct MarkdownWebView: NSViewRepresentable {
     let bridge: AnnotationBridge
     var scrollToRow: Int = 0
     var abbreviationDict: [String: String] = [:]
-    var entryID: UUID? = nil
 
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -419,20 +418,18 @@ struct MarkdownWebView: NSViewRepresentable {
         if scrollToRow != context.coordinator.lastScrollRow, scrollToRow > 0 {
             context.coordinator.lastScrollRow = scrollToRow
             let coordinator = context.coordinator
-            // Anchor = index of the row element we last scrolled to. Stored in the
-            // Coordinator (reliably survives view re-renders / page reloads) and seeded
-            // from UserDefaults for cross-launch. Selection is done in Swift (testable)
-            // and forward-biased so that resetting the counter to 1 for a new part
-            // advances into that part instead of snapping back to part 1.
-            let seedKey = "crochet.rowScrollIdx.\(entryID?.uuidString ?? "none")"
-            var anchor = coordinator.lastRowIndex
-            if anchor < 0 { anchor = UserDefaults.standard.object(forKey: seedKey) as? Int ?? -1 }
+            // Anchor = index of the row element we last scrolled to, held in the
+            // Coordinator for this session only (no cross-launch persistence — a saved
+            // position from a prior session would mis-send a fresh count into the middle
+            // of the pattern). Each session starts at -1 → the first count lands on
+            // part 1; selection is forward-biased so resetting to 1 for a new part
+            // advances into that part.
+            let anchor = coordinator.lastRowIndex
             let targetRow = scrollToRow
 
             func scroll(using texts: [String]) {
                 guard let idx = RowFollow.targetIndex(in: texts, row: targetRow, anchor: anchor) else { return }
                 coordinator.lastRowIndex = idx
-                UserDefaults.standard.set(idx, forKey: seedKey)
                 let js = "var __e=document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6')[\(idx)]; if(__e){__e.scrollIntoView({behavior:'smooth',block:'start'});}"
                 webView.evaluateJavaScript(js, completionHandler: nil)
             }
@@ -748,8 +745,7 @@ struct MarkdownView: View {
                     annotations: (library.activeEntry?.annotations ?? [:]),
                     bridge: bridge,
                     scrollToRow: scrollToRow,
-                    abbreviationDict: abbreviationDict,
-                    entryID: library.activeEntryID
+                    abbreviationDict: abbreviationDict
                 )
             }
         }
