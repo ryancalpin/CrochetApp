@@ -81,7 +81,12 @@ struct PatternLibraryView: View {
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
                     guard let url else { return }
                     let allowedExt: Set<String> = ["md", "markdown", "txt", "text", "rtf", "pdf"]
-                    guard allowedExt.contains(url.pathExtension.lowercased()) else { return }
+                    guard allowedExt.contains(url.pathExtension.lowercased()) else {
+                        DispatchQueue.main.async {
+                            importError = "\"\(url.lastPathComponent)\" isn't a supported file type. Drop a Markdown, PDF, RTF, or text file."
+                        }
+                        return
+                    }
                     DispatchQueue.main.async {
                         if let newID = library.add(url: url) { selectEntry(id: newID) }
                     }
