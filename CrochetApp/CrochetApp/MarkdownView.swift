@@ -211,7 +211,7 @@ struct MarkdownConverter {
     }
 
     // MARK: - Full HTML Document
-    static func htmlDocument(body: String, title: String = "Crochet Pattern") -> String {
+    static func htmlDocument(body: String, title: String = "Crochet Pattern", accentHex: String = "#7B6FA0") -> String {
         return """
         <!DOCTYPE html>
         <html lang="en">
@@ -223,25 +223,25 @@ struct MarkdownConverter {
           :root {
             --bg: #fafaf8;
             --fg: #2c2c2e;
-            --accent: #b5557e;
-            --accent-light: #f7e8ef;
+            --accent: \(accentHex);
+            --accent-light: #f0f0ee;
             --border: #e0e0e0;
             --code-bg: #f0f0f0;
-            --blockquote-bg: #fef3f8;
-            --link: #b5557e;
-            --h1: #6b2d4e;
+            --blockquote-bg: #f2f2f0;
+            --link: \(accentHex);
+            --h1: \(accentHex);
           }
           @media (prefers-color-scheme: dark) {
             :root {
-              --bg: #1c1c1e;
-              --fg: #f2f2f7;
-              --accent: #e9789c;
-              --accent-light: #3a1f2e;
-              --border: #3a3a3c;
-              --code-bg: #2c2c2e;
-              --blockquote-bg: #2a1a22;
-              --link: #e9789c;
-              --h1: #e9789c;
+              --bg: #1e1e1e;
+              --fg: #f0f0f0;
+              --accent: \(accentHex);
+              --accent-light: #2a2a2a;
+              --border: #3a3a3a;
+              --code-bg: #252525;
+              --blockquote-bg: #252525;
+              --link: \(accentHex);
+              --h1: \(accentHex);
             }
           }
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -326,7 +326,7 @@ struct MarkdownConverter {
 // MARK: - WKWebView Wrapper
 struct MarkdownWebView: NSViewRepresentable {
     let htmlContent: String
-    let annotations: [Int: String]
+    let annotations: [String: String]
     let bridge: AnnotationBridge
     var scrollToRow: Int = 0
     var abbreviationDict: [String: String] = [:]
@@ -346,6 +346,7 @@ struct MarkdownWebView: NSViewRepresentable {
 
         if htmlContent != context.coordinator.lastLoadedHTML {
             context.coordinator.lastLoadedHTML = htmlContent
+            context.coordinator.lastAbbreviationDict = [:]
             webView.loadHTMLString(htmlContent, baseURL: nil)
             return
         }
@@ -354,7 +355,7 @@ struct MarkdownWebView: NSViewRepresentable {
             context.coordinator.lastScrollRow = scrollToRow
             let js = """
             (function(){
-                var pat=new RegExp('\\\\bRow\\\\s+\(scrollToRow)\\\\b','i');
+                var pat=new RegExp('\\\\b(Row|Rnd|Round)\\\\s+\(scrollToRow)\\\\b','i');
                 var els=document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6');
                 for(var i=0;i<els.length;i++){
                     if(pat.test(els[i].textContent)){
@@ -365,6 +366,11 @@ struct MarkdownWebView: NSViewRepresentable {
             """
             webView.evaluateJavaScript(js, completionHandler: nil)
         }
+
+        if !abbreviationDict.isEmpty, abbreviationDict != context.coordinator.lastAbbreviationDict {
+            context.coordinator.lastAbbreviationDict = abbreviationDict
+            context.coordinator.injectAbbreviationTooltips(into: webView, dict: abbreviationDict)
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -372,27 +378,27 @@ struct MarkdownWebView: NSViewRepresentable {
     }
 
     final class Coordinator: NSObject, WKNavigationDelegate {
-        var pendingAnnotations: [Int: String]
+        var pendingAnnotations: [String: String]
         var pendingAbbreviationDict: [String: String] = [:]
         var lastLoadedHTML: String = ""
         var lastScrollRow: Int = 0
+        var lastAbbreviationDict: [String: String] = [:]
 
-        init(annotations: [Int: String]) {
+        init(annotations: [String: String]) {
             self.pendingAnnotations = annotations
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             injectAnnotationJS(into: webView, annotations: pendingAnnotations)
             if !pendingAbbreviationDict.isEmpty {
+                lastAbbreviationDict = pendingAbbreviationDict
                 injectAbbreviationTooltips(into: webView, dict: pendingAbbreviationDict)
             }
         }
 
-        private func injectAnnotationJS(into webView: WKWebView, annotations: [Int: String]) {
-            var stringKeyed: [String: String] = [:]
-            for (k, v) in annotations { stringKeyed["\(k)"] = v }
+        private func injectAnnotationJS(into webView: WKWebView, annotations: [String: String]) {
             let annotationsJSON: String
-            if let data = try? JSONSerialization.data(withJSONObject: stringKeyed),
+            if let data = try? JSONSerialization.data(withJSONObject: annotations),
                let str = String(data: data, encoding: .utf8) {
                 annotationsJSON = str
             } else {
@@ -405,40 +411,83 @@ struct MarkdownWebView: NSViewRepresentable {
               var existingNotes = \(annotationsJSON);
               var blocks = Array.from(document.querySelectorAll('p, li'));
 
-              blocks.forEach(function(block, idx) {
-                var key = String(idx);
+              function fingerprint(text) {
+                return text.trim().toLowerCase().slice(0, 64);
+              }
+              function safeId(fp) {
+                return fp.replace(/[^a-z0-9]/g, '_').slice(0, 32);
+              }
+              function noteId(fp) { return 'ann-note-' + safeId(fp); }
+              function editorId(fp) { return 'ann-editor-' + safeId(fp); }
+
+              blocks.forEach(function(block) {
+                var key = fingerprint(block.textContent);
                 if (existingNotes[key]) {
-                  insertNoteElement(block, idx, existingNotes[key]);
+                  insertNoteElement(block, key, existingNotes[key]);
                 }
               });
 
-              blocks.forEach(function(block, idx) {
-                block.addEventListener('click', function(e) {
-                  if (e.altKey) { e.stopPropagation(); openEditor(block, idx); }
+              // Floating pencil button
+              var noteBtn = document.createElement('div');
+              noteBtn.id = '__notebtn';
+              noteBtn.textContent = '✎';
+              noteBtn.title = 'Add note';
+              noteBtn.style.cssText = 'position:fixed;background:var(--accent);opacity:0.85;color:white;' +
+                  'width:20px;height:20px;border-radius:50%;font-size:11px;display:none;' +
+                  'align-items:center;justify-content:center;cursor:pointer;z-index:9000;' +
+                  'box-shadow:0 1px 4px rgba(0,0,0,0.3);user-select:none;line-height:1;';
+              document.body.appendChild(noteBtn);
+
+              var hoveredBlock = null, hoveredKey = null, hideTimer = null;
+
+              blocks.forEach(function(block) {
+                block.addEventListener('mouseenter', function() {
+                  clearTimeout(hideTimer);
+                  hoveredBlock = block;
+                  hoveredKey = fingerprint(block.textContent);
+                  var rect = block.getBoundingClientRect();
+                  noteBtn.style.left = (rect.right - 26) + 'px';
+                  noteBtn.style.top = Math.max(4, rect.top) + 'px';
+                  noteBtn.style.display = 'flex';
+                });
+                block.addEventListener('mouseleave', function(e) {
+                  if (e.relatedTarget === noteBtn) return;
+                  hideTimer = setTimeout(function() { noteBtn.style.display = 'none'; }, 120);
                 });
               });
 
-              function noteId(idx) { return 'ann-note-' + idx; }
-              function editorId(idx) { return 'ann-editor-' + idx; }
+              noteBtn.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+              noteBtn.addEventListener('mouseleave', function() { noteBtn.style.display = 'none'; });
+              noteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                noteBtn.style.display = 'none';
+                openEditor(hoveredBlock, hoveredKey);
+              });
 
-              function insertNoteElement(block, idx, text) {
-                var existing = document.getElementById(noteId(idx));
+              // Click outside editor to dismiss
+              document.addEventListener('click', function(e) {
+                var editor = document.querySelector('[id^="ann-editor-"]');
+                if (editor && !editor.contains(e.target)) { editor.remove(); }
+              });
+
+              function insertNoteElement(block, key, text) {
+                var existing = document.getElementById(noteId(key));
                 if (existing) { existing.remove(); }
                 var div = document.createElement('div');
-                div.id = noteId(idx);
+                div.id = noteId(key);
                 div.style.cssText = 'border-left:2px solid '+AMBER+';padding-left:10px;margin:4px 0 8px 0;font-style:italic;color:#999;font-size:11px;cursor:pointer';
                 div.textContent = text;
                 div.addEventListener('click', function(e) {
                   e.stopPropagation();
-                  openEditor(block, idx, text);
+                  openEditor(block, key, text);
                 });
                 block.insertAdjacentElement('afterend', div);
               }
 
-              function openEditor(block, idx, existingText) {
+              function openEditor(block, key, existingText) {
                 document.querySelectorAll('[id^="ann-editor-"]').forEach(function(el) { el.remove(); });
                 var container = document.createElement('div');
-                container.id = editorId(idx);
+                container.id = editorId(key);
                 container.style.cssText = 'border-left:2px solid '+AMBER+';padding-left:10px;margin:4px 0 8px 0;display:flex;align-items:center;gap:8px';
                 var input = document.createElement('input');
                 input.type = 'text';
@@ -446,7 +495,7 @@ struct MarkdownWebView: NSViewRepresentable {
                 input.placeholder = 'Add a note…';
                 input.style.cssText = 'flex:1;border:none;border-bottom:1px solid '+AMBER+';background:transparent;font-style:italic;color:#999;font-size:11px;outline:none;padding:2px 0';
                 input.addEventListener('keydown', function(e) {
-                  if (e.key === 'Enter') { e.preventDefault(); saveNote(idx, input.value, container); }
+                  if (e.key === 'Enter') { e.preventDefault(); saveNote(key, input.value, block, container); }
                   else if (e.key === 'Escape') { container.remove(); }
                 });
                 container.appendChild(input);
@@ -455,30 +504,30 @@ struct MarkdownWebView: NSViewRepresentable {
                   del.textContent = 'Delete';
                   del.href = '#';
                   del.style.cssText = 'color:#999;font-size:10px;text-decoration:none';
-                  del.addEventListener('click', function(e) { e.preventDefault(); deleteNote(idx, container); });
+                  del.addEventListener('click', function(e) { e.preventDefault(); deleteNote(key, container); });
                   container.appendChild(del);
                 }
                 block.insertAdjacentElement('afterend', container);
                 input.focus();
               }
 
-              function saveNote(idx, text, container) {
+              function saveNote(key, text, block, container) {
                 container.remove();
-                var noteEl = document.getElementById(noteId(idx));
+                var noteEl = document.getElementById(noteId(key));
                 if (noteEl) { noteEl.remove(); }
                 if (text.trim()) {
-                  insertNoteElement(blocks[idx], idx, text.trim());
-                  window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'save',index:idx,text:text.trim()});
+                  insertNoteElement(block, key, text.trim());
+                  window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'save',key:key,text:text.trim()});
                 } else {
-                  window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'delete',index:idx,text:''});
+                  window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'delete',key:key,text:''});
                 }
               }
 
-              function deleteNote(idx, container) {
+              function deleteNote(key, container) {
                 container.remove();
-                var noteEl = document.getElementById(noteId(idx));
+                var noteEl = document.getElementById(noteId(key));
                 if (noteEl) { noteEl.remove(); }
-                window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'delete',index:idx,text:''});
+                window.webkit.messageHandlers.AnnotationBridge.postMessage({action:'delete',key:key,text:''});
               }
             })();
             """
@@ -490,13 +539,11 @@ struct MarkdownWebView: NSViewRepresentable {
             }
         }
 
-        private func injectAbbreviationTooltips(into webView: WKWebView, dict: [String: String]) {
+        func injectAbbreviationTooltips(into webView: WKWebView, dict: [String: String]) {
             guard let data = try? JSONSerialization.data(withJSONObject: dict),
                   let json = String(data: data, encoding: .utf8) else { return }
             let js = """
             (function(){
-                if(window.__abbrevInjected)return;
-                window.__abbrevInjected=true;
                 var abbrevs=\(json);
                 var keys=Object.keys(abbrevs).sort(function(a,b){return b.length-a.length;});
                 if(!keys.length)return;
@@ -564,6 +611,7 @@ struct MarkdownView: View {
     var scrollToRow: Int = 0
     var abbreviationDict: [String: String] = [:]
 
+    @ObservedObject private var settings = AppSettings.shared
     @State private var markdownContent: String = ""
     @State private var htmlContent: String = ""
     @State private var isLoading: Bool = false
@@ -603,7 +651,7 @@ struct MarkdownView: View {
             } else {
                 MarkdownWebView(
                     htmlContent: htmlContent,
-                    annotations: library.activeEntry?.annotations ?? [:],
+                    annotations: (library.activeEntry?.annotations ?? [:]),
                     bridge: bridge,
                     scrollToRow: scrollToRow,
                     abbreviationDict: abbreviationDict
@@ -613,9 +661,23 @@ struct MarkdownView: View {
         .onChange(of: fileURL) { newURL in
             loadFile(url: newURL)
         }
+        .onChange(of: settings.rowColorHex) { _ in
+            // Regenerate HTML so CSS accent color reflects the new theme color.
+            reloadHTML()
+        }
         .onAppear {
             loadFile(url: fileURL)
         }
+    }
+
+    private func reloadHTML() {
+        guard !markdownContent.isEmpty, let url = fileURL else { return }
+        let body = MarkdownConverter.convert(markdownContent)
+        htmlContent = MarkdownConverter.htmlDocument(
+            body: body,
+            title: url.deletingPathExtension().lastPathComponent,
+            accentHex: settings.rowColorHex
+        )
     }
 
     private func loadFile(url: URL?) {
@@ -629,6 +691,8 @@ struct MarkdownView: View {
         isLoading = true
         errorMessage = nil
 
+        let accentHex = settings.rowColorHex
+
         DispatchQueue.global(qos: .userInitiated).async {
             do {
                 // Request access for sandboxed apps
@@ -639,7 +703,8 @@ struct MarkdownView: View {
                 let body = MarkdownConverter.convert(content)
                 let fullHTML = MarkdownConverter.htmlDocument(
                     body: body,
-                    title: url.deletingPathExtension().lastPathComponent
+                    title: url.deletingPathExtension().lastPathComponent,
+                    accentHex: accentHex
                 )
 
                 DispatchQueue.main.async {
@@ -663,14 +728,14 @@ struct EmptyMarkdownPlaceholder: View {
         VStack(spacing: 20) {
             Image(systemName: "doc.text")
                 .font(.system(size: 64))
-                .foregroundColor(Color.pink.opacity(0.4))
+                .foregroundColor(.secondary.opacity(0.5))
 
             Text("No Pattern Open")
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(.secondary)
 
-            Text("Open a Markdown file to view your crochet pattern here.\nUse **File → Open Pattern** or press **⌘O**.")
+            Text("Add a pattern from the sidebar — click the ＋ button or drag a Markdown, PDF, or text file in.")
                 .font(.callout)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

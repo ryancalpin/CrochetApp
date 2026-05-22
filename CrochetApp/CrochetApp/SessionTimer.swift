@@ -18,6 +18,7 @@ final class SessionTimer: ObservableObject {
 
     private var timerCancellable: AnyCancellable?
     private var appObservers: [NSObjectProtocol] = []
+    private var userPaused = false
 
     // MARK: - Init
 
@@ -35,8 +36,10 @@ final class SessionTimer: ObservableObject {
     /// Toggle pause/resume.
     func togglePause() {
         if isRunning {
+            userPaused = true
             pauseTimer()
         } else {
+            userPaused = false
             startTimer()
         }
     }
@@ -78,7 +81,8 @@ final class SessionTimer: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.startTimer()
+            guard let self, !self.userPaused else { return }
+            self.startTimer()
         }
 
         appObservers = [resign, activate]

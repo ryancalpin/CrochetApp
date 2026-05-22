@@ -1,9 +1,11 @@
 import Foundation
 import Combine
+import AppKit
 
 class CounterStore: ObservableObject {
     @Published var rowCount: Int = 0
     @Published var stitchCount: Int = 0
+    @Published var repeatCount: Int = 0
 
     weak var library: PatternLibrary?
 
@@ -14,11 +16,13 @@ class CounterStore: ObservableObject {
     func load(from entry: PatternEntry) {
         rowCount = entry.rowCount
         stitchCount = entry.stitchCount
+        repeatCount = entry.repeatCount
     }
 
     func reset() {
         rowCount = 0
         stitchCount = 0
+        repeatCount = 0
         sync()
     }
 
@@ -27,11 +31,12 @@ class CounterStore: ObservableObject {
     func incrementRow() {
         rowCount += 1
         if autoReset { stitchCount = 0 }
+        if AppSettings.shared.audioCueEnabled {
+            NSSound(named: "Tink")?.play()
+        }
         sync()
     }
 
-    /// Ends the current row: increments row and always resets stitch,
-    /// regardless of the autoResetStitch preference.
     func endRow() {
         rowCount += 1
         stitchCount = 0
@@ -62,9 +67,27 @@ class CounterStore: ObservableObject {
         sync()
     }
 
+    // MARK: - Repeat actions
+
+    func incrementRepeat() {
+        repeatCount += 1
+        sync()
+    }
+
+    func decrementRepeat() {
+        guard repeatCount > 0 else { return }
+        repeatCount -= 1
+        sync()
+    }
+
+    func resetRepeat() {
+        repeatCount = 0
+        sync()
+    }
+
     // MARK: - Private
 
     private func sync() {
-        library?.updateActiveCounters(row: rowCount, stitch: stitchCount, autoReset: autoReset)
+        library?.updateActiveCounters(row: rowCount, stitch: stitchCount, repeat: repeatCount, autoReset: autoReset)
     }
 }

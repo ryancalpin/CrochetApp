@@ -1,9 +1,9 @@
 import Foundation
 import FoundationModels
 
-// MARK: - Result Types
+// MARK: - Result Types (Codable for persistence)
 
-struct PatternSummary {
+struct PatternSummary: Codable {
     let patternName: String
     let skillLevel: String
     let materials: String
@@ -12,31 +12,27 @@ struct PatternSummary {
     let keyStitches: String
 }
 
-struct AbbreviationEntry: Identifiable {
-    let id = UUID()
+struct AbbreviationEntry: Identifiable, Codable {
+    let id: UUID
     let abbreviation: String
     let meaning: String
+
+    init(abbreviation: String, meaning: String) {
+        self.id = UUID()
+        self.abbreviation = abbreviation
+        self.meaning = meaning
+    }
 }
 
-struct AbbreviationList {
+struct AbbreviationList: Codable {
     let convention: String
     let entries: [AbbreviationEntry]
 }
 
-struct MaterialsBreakdown {
+struct MaterialsBreakdown: Codable {
     let yarn: String
     let hook: String
     let notions: String
-}
-
-struct StitchCountResult {
-    struct RowIssue: Identifiable {
-        let id = UUID()
-        let rowNumber: Int
-        let description: String
-    }
-    let issues: [RowIssue]
-    let unverifiableNote: String?
 }
 
 // MARK: - Service
@@ -49,18 +45,12 @@ final class PatternAIService: ObservableObject {
     @Published var isLoadingAbbreviations = false
     @Published var isLoadingMaterials = false
     @Published var isLoadingDifficulty = false
-    @Published var isLoadingConversion = false
-    @Published var isLoadingStitchVerifier = false
-    @Published var isLoadingYarnSub = false
     @Published var isLoadingTimeEstimate = false
 
     private var summaryCache: [UUID: PatternSummary] = [:]
     private var abbreviationCache: [UUID: AbbreviationList] = [:]
     private var materialsCache: [UUID: MaterialsBreakdown] = [:]
     private var difficultyCache: [UUID: String] = [:]
-    private var conversionCache: [UUID: String] = [:]
-    private var stitchVerifierCache: [UUID: StitchCountResult] = [:]
-    private var yarnSubCache: [UUID: String] = [:]
     private var timeEstimateCache: [UUID: String] = [:]
 
     func clearCache(for patternID: UUID) {
@@ -68,9 +58,6 @@ final class PatternAIService: ObservableObject {
         abbreviationCache.removeValue(forKey: patternID)
         materialsCache.removeValue(forKey: patternID)
         difficultyCache.removeValue(forKey: patternID)
-        conversionCache.removeValue(forKey: patternID)
-        stitchVerifierCache.removeValue(forKey: patternID)
-        yarnSubCache.removeValue(forKey: patternID)
         timeEstimateCache.removeValue(forKey: patternID)
     }
 
@@ -82,30 +69,30 @@ final class PatternAIService: ObservableObject {
         defer { isLoadingSummary = false }
 
         let session = LanguageModelSession()
+        let rowsPerHour = UserDefaults.standard.rowsPerHour
         let prompt = """
-        You are a crochet expert. Read the following crochet pattern and extract exactly these fields. \
-        Reply ONLY with lines in the format "Field: Value". Do not add any other text.
+        You are a crochet expert. Read this pattern and reply with ONLY these 6 lines. \
+        Fill in each value after the colon. Use "Unknown" if you cannot determine a value.
 
-        Fields:
-        PatternName: (name of the pattern, or "Unknown")
-        SkillLevel: (Beginner, Intermediate, or Advanced)
-        Materials: (yarn weight, hook size, yardage — one line summary)
-        TotalRows: (number of rows if determinable, otherwise "Unknown")
-        EstimatedTime: (use "\(UserDefaults.standard.rowsPerHour) rows/hour" as the pace and calculate hours if TotalRows is known, otherwise "Unknown")
-        KeyStitches: (comma-separated list of main stitches used)
+        Pattern: <name of the pattern>
+        Level: <Beginner, Intermediate, or Advanced>
+        Materials: <yarn weight, hook size — one line>
+        Rows: <total row/round count if stated, otherwise Unknown>
+        Time: <estimate using \(rowsPerHour) rows/hour if Rows is known, otherwise Unknown>
+        Stitches: <comma-separated main stitches used>
 
-        Pattern:
+        Crochet pattern to analyze:
         \(patternText)
         """
         let response = try await session.respond(to: prompt)
         let text = response.content
         let result = PatternSummary(
-            patternName: extractField("PatternName", from: text),
-            skillLevel: extractField("SkillLevel", from: text),
+            patternName: extractField("Pattern", from: text),
+            skillLevel: extractField("Level", from: text),
             materials: extractField("Materials", from: text),
-            totalRows: extractField("TotalRows", from: text),
-            estimatedTime: extractField("EstimatedTime", from: text),
-            keyStitches: extractField("KeyStitches", from: text)
+            totalRows: extractField("Rows", from: text),
+            estimatedTime: extractField("Time", from: text),
+            keyStitches: extractField("Stitches", from: text)
         )
         summaryCache[patternID] = result
         return result
@@ -222,114 +209,6 @@ final class PatternAIService: ObservableObject {
         return result
     }
 
-    // MARK: - US ↔ UK Converter
-
-    func convertTerminology(patternID: UUID, patternText: String) async throws -> String {
-        if let cached = conversionCache[patternID] { return cached }
-        isLoadingConversion = true
-        defer { isLoadingConversion = false }
-
-        let maxChars = 6000
-        guard patternText.count <= maxChars else {
-            let result = "Pattern is too long for full conversion (\(patternText.count) characters). Try a shorter pattern or paste just the stitch instructions."
-            conversionCache[patternID] = result
-            return result
-        }
-
-        let session = LanguageModelSession()
-        let prompt = """
-        You are a crochet expert. The following pattern uses crochet terminology.
-        First, detect whether it uses US or UK conventions.
-        Then rewrite the entire pattern with all stitch terms converted to the opposite convention.
-        Use these mappings (US→UK): sc→dc, dc→tr, hdc→htr, tr→dtr, skip→miss, yarn over→yarn round hook.
-        Reverse the mappings for UK→US patterns.
-        Begin your reply with "Converted from [US/UK] to [UK/US]:" on its own line, then the full converted pattern text.
-
-        Pattern:
-        \(patternText)
-        """
-        let response = try await session.respond(to: prompt)
-        let result = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        conversionCache[patternID] = result
-        return result
-    }
-
-    // MARK: - Stitch Count Verifier
-
-    func verifyStitchCounts(patternID: UUID, patternText: String) async throws -> StitchCountResult {
-        if let cached = stitchVerifierCache[patternID] { return cached }
-        isLoadingStitchVerifier = true
-        defer { isLoadingStitchVerifier = false }
-
-        let session = LanguageModelSession()
-        let prompt = """
-        You are a crochet expert and stitch math checker. Read the following pattern row by row and verify stitch counts.
-        Rules:
-        - If a row's stitch count is correct, skip it silently.
-        - If a row's stitch count does NOT match the expected count from the prior row, output one line like:
-          "Row 3: Expected 18 stitches (6 sc + 6×2-into-1 increases from Row 2's 12), but instructions produce 15."
-        - If a row's math cannot be parsed (ambiguous instructions, complex stitch combos, etc.), output:
-          "Row 5: Cannot verify — stitch math is ambiguous here."
-        - If every row checks out, output exactly: "All rows verified."
-        Output nothing else — no headers, no explanations outside the rows listed.
-
-        Pattern:
-        \(patternText)
-        """
-        let response = try await session.respond(to: prompt)
-        let text = response.content
-        let lines = text.components(separatedBy: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-
-        var issues: [StitchCountResult.RowIssue] = []
-        var unverifiableNote: String? = nil
-
-        if lines.first == "All rows verified." {
-            let result = StitchCountResult(issues: [], unverifiableNote: nil)
-            stitchVerifierCache[patternID] = result
-            return result
-        }
-
-        for line in lines {
-            if line.lowercased().hasPrefix("row ") {
-                let withoutPrefix = String(line.dropFirst(4))
-                if let colonRange = withoutPrefix.range(of: ":") {
-                    let rowNumStr = String(withoutPrefix[withoutPrefix.startIndex..<colonRange.lowerBound]).trimmingCharacters(in: .whitespaces)
-                    let description = String(withoutPrefix[colonRange.upperBound...]).trimmingCharacters(in: .whitespaces)
-                    if let rowNum = Int(rowNumStr) {
-                        issues.append(StitchCountResult.RowIssue(rowNumber: rowNum, description: description))
-                    }
-                }
-            }
-        }
-
-        let result = StitchCountResult(issues: issues, unverifiableNote: unverifiableNote)
-        stitchVerifierCache[patternID] = result
-        return result
-    }
-
-    // MARK: - Yarn Substitution Suggester
-
-    func suggestYarnSubstitutions(patternID: UUID, patternText: String) async throws -> String {
-        if let cached = yarnSubCache[patternID] { return cached }
-        isLoadingYarnSub = true
-        defer { isLoadingYarnSub = false }
-
-        let session = LanguageModelSession()
-        let prompt = """
-        You are a crochet expert. Based on the yarn specification in the following pattern, \
-        suggest 2–3 alternative yarn characteristics that would work as substitutes.
-        Do NOT recommend specific brand names. Stay generic (e.g., "any worsted-weight superwash wool or acrylic blend").
-        Format as a numbered list. Keep each item to one sentence.
-
-        Pattern:
-        \(patternText)
-        """
-        let response = try await session.respond(to: prompt)
-        let result = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        yarnSubCache[patternID] = result
-        return result
-    }
-
     // MARK: - Project Time Estimator
 
     func estimateTime(patternID: UUID, patternText: String, rowGoal: Int, rowCount: Int) async throws -> String {
@@ -365,12 +244,84 @@ final class PatternAIService: ObservableObject {
     // MARK: - Helpers
 
     private func extractField(_ field: String, from text: String) -> String {
+        let prefix = "\(field):".lowercased()
         let lines = text.components(separatedBy: "\n")
         for line in lines {
-            if line.hasPrefix("\(field):") {
+            if line.lowercased().hasPrefix(prefix) {
                 return line.dropFirst(field.count + 1).trimmingCharacters(in: .whitespaces)
             }
         }
         return "Unknown"
+    }
+}
+
+// MARK: - Background insight driver
+
+/// Owns the single shared `PatternAIService` and generates a pattern's AI insights
+/// in the background as soon as it is imported (or first opened), persisting each
+/// result to the library so it never needs to be re-run.
+///
+/// `ensure(for:in:)` is idempotent: it skips fields already cached on the entry and
+/// will not start a second run for a pattern that is already being analyzed. This is
+/// what makes "auto-parse on import" safe — opening or re-selecting a pattern never
+/// triggers a fresh burst of on-device model calls once its insights are persisted.
+@available(macOS 26.0, *)
+@MainActor
+enum AIInsights {
+    /// The one service instance shared by the background driver and the AI panel,
+    /// so their in-memory caches stay coherent.
+    static let service = PatternAIService()
+
+    /// Patterns currently being analyzed, to avoid overlapping runs.
+    private static var inFlight: Set<UUID> = []
+
+    /// Generate any missing insights for `entryID` and persist them. Safe to call on
+    /// every import and every selection — it no-ops when the work is already done or
+    /// in progress.
+    static func ensure(for entryID: UUID, in library: PatternLibrary) {
+        guard !inFlight.contains(entryID),
+              let entry = library.entries.first(where: { $0.id == entryID }) else { return }
+
+        // Fully analyzed already — nothing to do.
+        if entry.aiSummary != nil, entry.aiAbbreviations != nil, entry.aiMaterials != nil,
+           entry.aiDifficulty != nil, entry.aiTimeEstimate != nil { return }
+
+        // Read the pattern text once, holding the security scope only for the read.
+        guard let url = entry.resolveURL() else { return }
+        let didAccess = url.startAccessingSecurityScopedResource()
+        let text = try? String(contentsOf: url, encoding: .utf8)
+        if didAccess { url.stopAccessingSecurityScopedResource() }
+        guard let patternText = text, !patternText.isEmpty else { return }
+
+        inFlight.insert(entryID)
+        Task {
+            defer { inFlight.remove(entryID) }
+            func fresh() -> PatternEntry? { library.entries.first { $0.id == entryID } }
+
+            if fresh()?.aiSummary == nil,
+               let r = try? await service.generateSummary(patternID: entryID, patternText: patternText) {
+                library.updateAICache(for: entryID, summary: r)
+            }
+            if fresh()?.aiAbbreviations == nil,
+               let r = try? await service.generateAbbreviations(patternID: entryID, patternText: patternText) {
+                library.updateAICache(for: entryID, abbreviations: r)
+            }
+            if fresh()?.aiMaterials == nil,
+               let r = try? await service.extractMaterials(patternID: entryID, patternText: patternText) {
+                library.updateAICache(for: entryID, materials: r)
+            }
+            if fresh()?.aiDifficulty == nil,
+               let r = try? await service.estimateDifficulty(patternID: entryID, patternText: patternText) {
+                library.updateAICache(for: entryID, difficulty: r)
+            }
+            if fresh()?.aiTimeEstimate == nil {
+                let e = fresh()
+                if let r = try? await service.estimateTime(
+                    patternID: entryID, patternText: patternText,
+                    rowGoal: e?.rowGoal ?? 0, rowCount: e?.rowCount ?? 0) {
+                    library.updateAICache(for: entryID, timeEstimate: r)
+                }
+            }
+        }
     }
 }

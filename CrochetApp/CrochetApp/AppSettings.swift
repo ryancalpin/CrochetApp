@@ -5,7 +5,14 @@ import SwiftUI
 final class AppSettings: ObservableObject {
 
     static let shared = AppSettings()
-    private init() {}
+
+    private var defaultsObserver: NSObjectProtocol?
+    private init() {
+        defaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in self?.objectWillChange.send() }
+    }
+    deinit { if let o = defaultsObserver { NotificationCenter.default.removeObserver(o) } }
 
     // MARK: - Counting
 
@@ -39,13 +46,30 @@ final class AppSettings: ObservableObject {
     /// Whether the session timer is visible in the counter bar.
     @AppStorage("crochet.showTimer") var showTimer: Bool = true
 
-    // MARK: - Pill color scheme
+    // MARK: - Audio
 
-    @AppStorage("crochet.pillColorScheme") var pillColorSchemeRaw: String = PillColorScheme.classic.rawValue
+    /// Play a subtle tick sound when incrementing a row.
+    @AppStorage("crochet.audioCueEnabled") var audioCueEnabled: Bool = false
 
-    var pillColorScheme: PillColorScheme {
-        get { PillColorScheme(rawValue: pillColorSchemeRaw) ?? .classic }
-        set { pillColorSchemeRaw = newValue.rawValue }
+    // MARK: - Counter colors (free color pickers)
+
+    @AppStorage("crochet.rowColorHex")    var rowColorHex:    String = "#B5547D"
+    @AppStorage("crochet.stitchColorHex") var stitchColorHex: String = "#7D4DCC"
+    @AppStorage("crochet.repeatColorHex") var repeatColorHex: String = "#00897B"
+
+    var rowColor: Color {
+        get { Color(hex: rowColorHex)    ?? Color(red: 0.71, green: 0.33, blue: 0.49) }
+        set { rowColorHex    = newValue.hexString }
+    }
+
+    var stitchColor: Color {
+        get { Color(hex: stitchColorHex) ?? Color(red: 0.49, green: 0.30, blue: 0.80) }
+        set { stitchColorHex = newValue.hexString }
+    }
+
+    var repeatColor: Color {
+        get { Color(hex: repeatColorHex) ?? .teal }
+        set { repeatColorHex = newValue.hexString }
     }
 
     // MARK: - Counter size enum
@@ -80,39 +104,21 @@ final class AppSettings: ObservableObject {
         }
     }
 
-    // MARK: - Pill color scheme enum
+    // MARK: - Built-in color presets (used by SettingsView)
 
-    enum PillColorScheme: String, CaseIterable {
-        case classic, ocean, forest, sunset, mono
-
-        var label: String {
-            switch self {
-            case .classic: return "Classic"
-            case .ocean:   return "Ocean"
-            case .forest:  return "Forest"
-            case .sunset:  return "Sunset"
-            case .mono:    return "Mono"
-            }
-        }
-
-        var rowColor: Color {
-            switch self {
-            case .classic: return Color(red: 0.71, green: 0.33, blue: 0.49)
-            case .ocean:   return Color(red: 0.00, green: 0.48, blue: 0.80)
-            case .forest:  return Color(red: 0.18, green: 0.49, blue: 0.29)
-            case .sunset:  return Color(red: 0.88, green: 0.38, blue: 0.13)
-            case .mono:    return Color(white: 0.45)
-            }
-        }
-
-        var stitchColor: Color {
-            switch self {
-            case .classic: return Color(red: 0.49, green: 0.30, blue: 0.80)
-            case .ocean:   return Color(red: 0.00, green: 0.55, blue: 0.60)
-            case .forest:  return Color(red: 0.77, green: 0.49, blue: 0.17)
-            case .sunset:  return Color(red: 0.75, green: 0.20, blue: 0.29)
-            case .mono:    return Color(white: 0.65)
-            }
-        }
+    struct ColorPreset: Identifiable {
+        let id = UUID()
+        let name: String
+        let rowHex: String
+        let stitchHex: String
+        let repeatHex: String
     }
+
+    static let colorPresets: [ColorPreset] = [
+        .init(name: "Classic", rowHex: "#B5547D", stitchHex: "#7D4DCC", repeatHex: "#00897B"),
+        .init(name: "Ocean",   rowHex: "#007ACC", stitchHex: "#00899A", repeatHex: "#2E7D32"),
+        .init(name: "Forest",  rowHex: "#2E7D4A", stitchHex: "#C47D2C", repeatHex: "#1565C0"),
+        .init(name: "Sunset",  rowHex: "#E06021", stitchHex: "#BF3349", repeatHex: "#6A1B9A"),
+        .init(name: "Mono",    rowHex: "#737373", stitchHex: "#A6A6A6", repeatHex: "#555555"),
+    ]
 }

@@ -20,14 +20,18 @@
 		GG7777777777777777777777 /* AnnotationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG8888888888888888888888 /* AnnotationBridge.swift */; };
 		HH1111111111111111111111 /* UserDefaults+CrochetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */; };
 		II3333333333333333333333 /* PatternAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = II4444444444444444444444 /* PatternAIService.swift */; };
-		JJ5555555555555555555555 /* AIFeatureSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = JJ6666666666666666666666 /* AIFeatureSection.swift */; };
 		KK7777777777777777777777 /* PatternQAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = KK8888888888888888888888 /* PatternQAView.swift */; };
 		LL9999999999999999999999 /* AIPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */; };
 		MM1111111111111111111111 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = MM2222222222222222222222 /* AppSettings.swift */; };
 		NN3333333333333333333333 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NN4444444444444444444444 /* SettingsView.swift */; };
 		OO5555555555555555555555 /* PatternContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OO6666666666666666666666 /* PatternContentView.swift */; };
-		BB2222222222222222222222 /* PatternStatsBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1111111111111111111111 /* PatternStatsBannerView.swift */; };
-/* End PBXBuildFile section */
+		7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */; };
+		DS1111111111111111111111 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS2222222222222222222222 /* Theme.swift */; };
+		DS3333333333333333333333 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS4444444444444444444444 /* Typography.swift */; };
+		DSCP11111111111111111111 /* CounterPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSCP22222222222222222222 /* CounterPill.swift */; };
+		DSHU11111111111111111111 /* GlassHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSHU22222222222222222222 /* GlassHUD.swift */; };
+		DSSC11111111111111111111 /* SectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSSC22222222222222222222 /* SectionCard.swift */; };
+		/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AA000001000000000000001B /* CrochetAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrochetAppApp.swift; sourceTree = "<group>"; };
@@ -45,15 +49,19 @@
 		GG8888888888888888888888 /* AnnotationBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnotationBridge.swift; sourceTree = "<group>"; };
 		HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDefaults+CrochetApp.swift"; sourceTree = "<group>"; };
 		II4444444444444444444444 /* PatternAIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternAIService.swift; sourceTree = "<group>"; };
-		JJ6666666666666666666666 /* AIFeatureSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIFeatureSection.swift; sourceTree = "<group>"; };
 		KK8888888888888888888888 /* PatternQAView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternQAView.swift; sourceTree = "<group>"; };
 		LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIPanelView.swift; sourceTree = "<group>"; };
 		MM2222222222222222222222 /* AppSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		NN4444444444444444444444 /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		OO6666666666666666666666 /* PatternContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternContentView.swift; sourceTree = "<group>"; };
-		BB1111111111111111111111 /* PatternStatsBannerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternStatsBannerView.swift; sourceTree = "<group>"; };
 		AA00000100000000000000AB /* CrochetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrochetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
+		9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
+		DS2222222222222222222222 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		DS4444444444444444444444 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		DSCP22222222222222222222 /* CounterPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPill.swift; sourceTree = "<group>"; };
+		DSHU22222222222222222222 /* GlassHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassHUD.swift; sourceTree = "<group>"; };
+		DSSC22222222222222222222 /* SectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionCard.swift; sourceTree = "<group>"; };
+		/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AA00000100000000000000BB /* Frameworks */ = {
@@ -74,6 +82,8 @@
 				AA000001000000000000004B /* MarkdownView.swift */,
 				AA000001000000000000005B /* CounterStore.swift */,
 				BB1234567890ABCDEF123456 /* PatternEntry.swift */,
+				9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */,
+				DS5555555555555555555555 /* DesignSystem */,
 				CC9876543210FEDCBA123456 /* PatternLibrary.swift */,
 				DD2222222222222222222222 /* PatternLibraryView.swift */,
 				EE4444444444444444444444 /* CounterBarView.swift */,
@@ -81,18 +91,28 @@
 				GG8888888888888888888888 /* AnnotationBridge.swift */,
 				HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */,
 				II4444444444444444444444 /* PatternAIService.swift */,
-				JJ6666666666666666666666 /* AIFeatureSection.swift */,
 				KK8888888888888888888888 /* PatternQAView.swift */,
 				LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */,
 				MM2222222222222222222222 /* AppSettings.swift */,
 				NN4444444444444444444444 /* SettingsView.swift */,
 				OO6666666666666666666666 /* PatternContentView.swift */,
-				BB1111111111111111111111 /* PatternStatsBannerView.swift */,
 				AA000001000000000000006B /* Assets.xcassets */,
 				AA000001000000000000007B /* Info.plist */,
 				AA000001000000000000008B /* CrochetApp.entitlements */,
 			);
 			path = CrochetApp;
+			sourceTree = "<group>";
+		};
+		DS5555555555555555555555 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				DS2222222222222222222222 /* Theme.swift */,
+				DS4444444444444444444444 /* Typography.swift */,
+				DSCP22222222222222222222 /* CounterPill.swift */,
+				DSHU22222222222222222222 /* GlassHUD.swift */,
+				DSSC22222222222222222222 /* SectionCard.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 		AA00000100000000000000DB /* Products */ = {
@@ -185,6 +205,12 @@
 				AA000001000000000000004A /* MarkdownView.swift in Sources */,
 				AA000001000000000000005A /* CounterStore.swift in Sources */,
 				BB1234567890ABCDEF654321 /* PatternEntry.swift in Sources */,
+				7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */,
+				DS1111111111111111111111 /* Theme.swift in Sources */,
+				DS3333333333333333333333 /* Typography.swift in Sources */,
+				DSCP11111111111111111111 /* CounterPill.swift in Sources */,
+				DSHU11111111111111111111 /* GlassHUD.swift in Sources */,
+				DSSC11111111111111111111 /* SectionCard.swift in Sources */,
 				CC9876543210FEDCBA654321 /* PatternLibrary.swift in Sources */,
 				DD1111111111111111111111 /* PatternLibraryView.swift in Sources */,
 				EE3333333333333333333333 /* CounterBarView.swift in Sources */,
@@ -192,13 +218,11 @@
 				GG7777777777777777777777 /* AnnotationBridge.swift in Sources */,
 				HH1111111111111111111111 /* UserDefaults+CrochetApp.swift in Sources */,
 				II3333333333333333333333 /* PatternAIService.swift in Sources */,
-				JJ5555555555555555555555 /* AIFeatureSection.swift in Sources */,
 				KK7777777777777777777777 /* PatternQAView.swift in Sources */,
 				LL9999999999999999999999 /* AIPanelView.swift in Sources */,
 				MM1111111111111111111111 /* AppSettings.swift in Sources */,
 				NN3333333333333333333333 /* SettingsView.swift in Sources */,
 				OO5555555555555555555555 /* PatternContentView.swift in Sources */,
-				BB2222222222222222222222 /* PatternStatsBannerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,7 +233,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -272,7 +296,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
