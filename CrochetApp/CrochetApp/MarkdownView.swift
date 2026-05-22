@@ -1,6 +1,34 @@
 import SwiftUI
 import WebKit
 
+// MARK: - Row-follow selection
+//
+// Chooses which "Row/Rnd/Round N" element to scroll to in a multi-part pattern,
+// where the same number appears once per part. Pure + testable.
+enum RowFollow {
+    /// Indices of elements whose text contains "Row/Rnd/Round <row>" as a whole word.
+    static func matchingIndices(in texts: [String], row: Int) -> [Int] {
+        guard row > 0,
+              let re = try? NSRegularExpression(pattern: "\\b(Row|Rnd|Round)\\s+\(row)\\b", options: [.caseInsensitive])
+        else { return [] }
+        return texts.indices.filter { i in
+            let t = texts[i]
+            return re.firstMatch(in: t, range: NSRange(t.startIndex..., in: t)) != nil
+        }
+    }
+
+    /// Forward-biased pick: the first match AFTER the anchor — so counting up follows
+    /// forward and resetting to 1 for a new part jumps into that part rather than back
+    /// to part 1. If there is no match after the anchor (e.g. stepping backward within
+    /// a part, or the last part), fall back to the closest match at/before the anchor.
+    /// Returns nil when the row number appears nowhere.
+    static func targetIndex(in texts: [String], row: Int, anchor: Int) -> Int? {
+        let matches = matchingIndices(in: texts, row: row)
+        if let forward = matches.first(where: { $0 > anchor }) { return forward }
+        return matches.last
+    }
+}
+
 // MARK: - Simple Markdown to HTML Converter
 struct MarkdownConverter {
     static func convert(_ markdown: String) -> String {
@@ -348,43 +376,42 @@ struct MarkdownWebView: NSViewRepresentable {
         if htmlContent != context.coordinator.lastLoadedHTML {
             context.coordinator.lastLoadedHTML = htmlContent
             context.coordinator.lastAbbreviationDict = [:]
+            context.coordinator.lastRowIndex = -1
+            context.coordinator.lastScrollRow = 0
+            context.coordinator.elementTexts = []
             webView.loadHTMLString(htmlContent, baseURL: nil)
             return
         }
 
         if scrollToRow != context.coordinator.lastScrollRow, scrollToRow > 0 {
             context.coordinator.lastScrollRow = scrollToRow
-            // Per-pattern seed so reopening mid-pattern re-locks onto the part the user
-            // was last on (window.__lastRowIdx is page-local and resets on reload).
+            let coordinator = context.coordinator
+            // Anchor = index of the row element we last scrolled to. Stored in the
+            // Coordinator (reliably survives view re-renders / page reloads) and seeded
+            // from UserDefaults for cross-launch. Selection is done in Swift (testable)
+            // and forward-biased so that resetting the counter to 1 for a new part
+            // advances into that part instead of snapping back to part 1.
             let seedKey = "crochet.rowScrollIdx.\(entryID?.uuidString ?? "none")"
-            let seed = UserDefaults.standard.object(forKey: seedKey) as? Int ?? -1
-            let js = """
-            (function(){
-                var pat=new RegExp('\\\\b(Row|Rnd|Round)\\\\s+\(scrollToRow)\\\\b','i');
-                var els=document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6');
-                // Multi-part patterns restart numbering each part, so the same "Rnd N"
-                // appears multiple times. Pick the occurrence CLOSEST to where we last
-                // scrolled instead of always the first — so counting up then resetting
-                // to 1 follows into the next part rather than snapping back to part 1.
-                // Seed from the persisted position so this survives a reload.
-                var last=(typeof window.__lastRowIdx==='number')?window.__lastRowIdx:\(seed);
-                var best=-1,bestDist=Infinity;
-                for(var i=0;i<els.length;i++){
-                    if(pat.test(els[i].textContent)){
-                        var d=Math.abs(i-last);
-                        if(d<bestDist){bestDist=d;best=i;}
-                    }
-                }
-                if(best!==-1){
-                    els[best].scrollIntoView({behavior:'smooth',block:'start'});
-                    window.__lastRowIdx=best;
-                }
-                return best;
-            })();
-            """
-            webView.evaluateJavaScript(js) { result, _ in
-                if let idx = result as? Int, idx >= 0 {
-                    UserDefaults.standard.set(idx, forKey: seedKey)
+            var anchor = coordinator.lastRowIndex
+            if anchor < 0 { anchor = UserDefaults.standard.object(forKey: seedKey) as? Int ?? -1 }
+            let targetRow = scrollToRow
+
+            func scroll(using texts: [String]) {
+                guard let idx = RowFollow.targetIndex(in: texts, row: targetRow, anchor: anchor) else { return }
+                coordinator.lastRowIndex = idx
+                UserDefaults.standard.set(idx, forKey: seedKey)
+                let js = "var __e=document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6')[\(idx)]; if(__e){__e.scrollIntoView({behavior:'smooth',block:'start'});}"
+                webView.evaluateJavaScript(js, completionHandler: nil)
+            }
+
+            if !coordinator.elementTexts.isEmpty {
+                scroll(using: coordinator.elementTexts)
+            } else {
+                // Texts not cached yet (first scroll right after load) — fetch then scroll.
+                webView.evaluateJavaScript(Coordinator.elementTextsJS) { result, _ in
+                    let texts = result as? [String] ?? []
+                    coordinator.elementTexts = texts
+                    scroll(using: texts)
                 }
             }
         }
@@ -405,6 +432,14 @@ struct MarkdownWebView: NSViewRepresentable {
         var lastLoadedHTML: String = ""
         var lastScrollRow: Int = 0
         var lastAbbreviationDict: [String: String] = [:]
+        /// Document-order index of the last row element we scrolled to. Lives in the
+        /// Coordinator (survives page reloads / view re-renders), seeded from
+        /// UserDefaults for cross-launch. -1 = not yet established.
+        var lastRowIndex: Int = -1
+        /// Cached textContent of every p/li/heading element, in document order — used
+        /// for Swift-side row matching. Refreshed on each page load.
+        var elementTexts: [String] = []
+        static let elementTextsJS = "Array.from(document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6')).map(function(e){return e.textContent})"
 
         init(annotations: [String: String]) {
             self.pendingAnnotations = annotations
@@ -412,6 +447,10 @@ struct MarkdownWebView: NSViewRepresentable {
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             injectAnnotationJS(into: webView, annotations: pendingAnnotations)
+            // Cache the row-element texts for Swift-side row matching.
+            webView.evaluateJavaScript(Coordinator.elementTextsJS) { [weak self] result, _ in
+                if let arr = result as? [String] { self?.elementTexts = arr }
+            }
             if !pendingAbbreviationDict.isEmpty {
                 lastAbbreviationDict = pendingAbbreviationDict
                 injectAbbreviationTooltips(into: webView, dict: pendingAbbreviationDict)

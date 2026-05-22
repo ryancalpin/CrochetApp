@@ -37,6 +37,7 @@
 		TST0000000000000000000102 /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000202 /* AppSettingsTests.swift */; };
 		TST0000000000000000000103 /* PatternEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000203 /* PatternEntryTests.swift */; };
 		TST0000000000000000000104 /* PatternExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000204 /* PatternExporterTests.swift */; };
+		TST0000000000000000000106 /* RowFollowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000206 /* RowFollowTests.swift */; };
 		TST0000000000000000000105 /* CounterStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000205 /* CounterStoreTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -83,6 +84,7 @@
 		TST0000000000000000000201 /* PatternAIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternAIServiceTests.swift; sourceTree = "<group>"; };
 		TST0000000000000000000202 /* AppSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsTests.swift; sourceTree = "<group>"; };
 		TST0000000000000000000203 /* PatternEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternEntryTests.swift; sourceTree = "<group>"; };
+		TST0000000000000000000206 /* RowFollowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowFollowTests.swift; sourceTree = "<group>"; };
 		TST0000000000000000000204 /* PatternExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternExporterTests.swift; sourceTree = "<group>"; };
 		TST0000000000000000000205 /* CounterStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterStoreTests.swift; sourceTree = "<group>"; };
 		TST0000000000000000000300 /* CrochetAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrochetAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -173,6 +175,7 @@
 				TST0000000000000000000201 /* PatternAIServiceTests.swift */,
 				TST0000000000000000000202 /* AppSettingsTests.swift */,
 				TST0000000000000000000203 /* PatternEntryTests.swift */,
+				TST0000000000000000000206 /* RowFollowTests.swift */,
 				TST0000000000000000000204 /* PatternExporterTests.swift */,
 				TST0000000000000000000205 /* CounterStoreTests.swift */,
 			);
@@ -313,6 +316,7 @@
 				TST0000000000000000000101 /* PatternAIServiceTests.swift in Sources */,
 				TST0000000000000000000102 /* AppSettingsTests.swift in Sources */,
 				TST0000000000000000000103 /* PatternEntryTests.swift in Sources */,
+				TST0000000000000000000106 /* RowFollowTests.swift in Sources */,
 				TST0000000000000000000104 /* PatternExporterTests.swift in Sources */,
 				TST0000000000000000000105 /* CounterStoreTests.swift in Sources */,
 			);
