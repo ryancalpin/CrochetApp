@@ -1,6 +1,9 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+@available(macOS 26.0, *)
+private enum AIServiceBox { @MainActor static let shared = PatternAIService() }
+
 struct ContentView: View {
     @ObservedObject var library: PatternLibrary
     @ObservedObject var store: CounterStore
@@ -38,25 +41,24 @@ struct ContentView: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                    // Keep AIPanelView always in the hierarchy when a pattern is active so
-                    // its @StateObject (service + cache) survives panel close/reopen.
-                    if #available(macOS 26.0, *), let entry = library.activeEntry, let text = loadedPatternText {
+                    // Mount AIPanelView ONLY when open so its .task never runs (no AI burst)
+                    // while the panel is closed. The shared service (owned outside the panel)
+                    // keeps the per-pattern cache alive across close/reopen.
+                    if #available(macOS 26.0, *), showAIPanel, let entry = library.activeEntry, let text = loadedPatternText {
                         resizableDivider
-                            .opacity(showAIPanel ? 1 : 0)
-                            .frame(width: showAIPanel ? 1 : 0)
                         AIPanelView(
+                            service: AIServiceBox.shared,
                             entry: entry,
                             patternText: text,
                             library: library,
                             showAIPanel: $showAIPanel,
                             abbreviationDict: $abbreviationDict
                         )
-                        .frame(width: showAIPanel ? aiPanelWidth : 0)
-                        .opacity(showAIPanel ? 1 : 0)
-                        .clipped()
-                        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showAIPanel)
+                        .frame(width: aiPanelWidth)
+                        .transition(.move(edge: .trailing))
                     }
                 }
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showAIPanel)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

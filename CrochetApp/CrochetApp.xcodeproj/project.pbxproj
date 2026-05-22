@@ -20,7 +20,6 @@
 		GG7777777777777777777777 /* AnnotationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG8888888888888888888888 /* AnnotationBridge.swift */; };
 		HH1111111111111111111111 /* UserDefaults+CrochetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */; };
 		II3333333333333333333333 /* PatternAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = II4444444444444444444444 /* PatternAIService.swift */; };
-		JJ5555555555555555555555 /* AIFeatureSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = JJ6666666666666666666666 /* AIFeatureSection.swift */; };
 		KK7777777777777777777777 /* PatternQAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = KK8888888888888888888888 /* PatternQAView.swift */; };
 		LL9999999999999999999999 /* AIPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */; };
 		MM1111111111111111111111 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = MM2222222222222222222222 /* AppSettings.swift */; };
@@ -50,7 +49,6 @@
 		GG8888888888888888888888 /* AnnotationBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnotationBridge.swift; sourceTree = "<group>"; };
 		HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDefaults+CrochetApp.swift"; sourceTree = "<group>"; };
 		II4444444444444444444444 /* PatternAIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternAIService.swift; sourceTree = "<group>"; };
-		JJ6666666666666666666666 /* AIFeatureSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIFeatureSection.swift; sourceTree = "<group>"; };
 		KK8888888888888888888888 /* PatternQAView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternQAView.swift; sourceTree = "<group>"; };
 		LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIPanelView.swift; sourceTree = "<group>"; };
 		MM2222222222222222222222 /* AppSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
@@ -93,7 +91,6 @@
 				GG8888888888888888888888 /* AnnotationBridge.swift */,
 				HH2222222222222222222222 /* UserDefaults+CrochetApp.swift */,
 				II4444444444444444444444 /* PatternAIService.swift */,
-				JJ6666666666666666666666 /* AIFeatureSection.swift */,
 				KK8888888888888888888888 /* PatternQAView.swift */,
 				LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */,
 				MM2222222222222222222222 /* AppSettings.swift */,
@@ -221,7 +218,6 @@
 				GG7777777777777777777777 /* AnnotationBridge.swift in Sources */,
 				HH1111111111111111111111 /* UserDefaults+CrochetApp.swift in Sources */,
 				II3333333333333333333333 /* PatternAIService.swift in Sources */,
-				JJ5555555555555555555555 /* AIFeatureSection.swift in Sources */,
 				KK7777777777777777777777 /* PatternQAView.swift in Sources */,
 				LL9999999999999999999999 /* AIPanelView.swift in Sources */,
 				MM1111111111111111111111 /* AppSettings.swift in Sources */,

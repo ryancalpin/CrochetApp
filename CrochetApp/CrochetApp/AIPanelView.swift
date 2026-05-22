@@ -2,13 +2,12 @@ import SwiftUI
 
 @available(macOS 26.0, *)
 struct AIPanelView: View {
+    @ObservedObject var service: PatternAIService
     let entry: PatternEntry
     let patternText: String
     @ObservedObject var library: PatternLibrary
     @Binding var showAIPanel: Bool
     @Binding var abbreviationDict: [String: String]
-
-    @StateObject private var service = PatternAIService()
 
     @State private var summary: PatternSummary? = nil
     @State private var abbreviationList: AbbreviationList? = nil
@@ -28,35 +27,35 @@ struct AIPanelView: View {
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    AIFeatureSection(title: "Ask a Question", isLoading: false, onRegenerate: {}) {
+                    SectionCard(title: "Ask a Question", isLoading: false, onRegenerate: nil) {
                         PatternQAView(service: service, patternText: patternText)
                     }
                     Divider().padding(.horizontal, 12)
-                    AIFeatureSection(title: "Summary", isLoading: service.isLoadingSummary, onRegenerate: regenSummary) {
+                    SectionCard(title: "Summary", isLoading: service.isLoadingSummary, onRegenerate: regenSummary) {
                         if let s = summary { summaryContent(s) }
                         else if let e = summaryError { errorText(e) }
                         else { loadingPlaceholder }
                     }
                     Divider().padding(.horizontal, 12)
-                    AIFeatureSection(title: "Abbreviations", isLoading: service.isLoadingAbbreviations, onRegenerate: regenAbbreviations) {
+                    SectionCard(title: "Abbreviations", isLoading: service.isLoadingAbbreviations, onRegenerate: regenAbbreviations) {
                         if let a = abbreviationList { abbreviationsContent(a) }
                         else if let e = abbreviationsError { errorText(e) }
                         else { loadingPlaceholder }
                     }
                     Divider().padding(.horizontal, 12)
-                    AIFeatureSection(title: "Materials", isLoading: service.isLoadingMaterials, onRegenerate: regenMaterials) {
+                    SectionCard(title: "Materials", isLoading: service.isLoadingMaterials, onRegenerate: regenMaterials) {
                         if let m = materials { materialsContent(m) }
                         else if let e = materialsError { errorText(e) }
                         else { loadingPlaceholder }
                     }
                     Divider().padding(.horizontal, 12)
-                    AIFeatureSection(title: "Difficulty", isLoading: service.isLoadingDifficulty, onRegenerate: regenDifficulty) {
+                    SectionCard(title: "Difficulty", isLoading: service.isLoadingDifficulty, onRegenerate: regenDifficulty) {
                         if let d = difficulty { Text(d).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true) }
                         else if let e = difficultyError { errorText(e) }
                         else { loadingPlaceholder }
                     }
                     Divider().padding(.horizontal, 12)
-                    AIFeatureSection(title: "Time Estimate", isLoading: service.isLoadingTimeEstimate, onRegenerate: regenTime) {
+                    SectionCard(title: "Time Estimate", isLoading: service.isLoadingTimeEstimate, onRegenerate: regenTime) {
                         if let t = timeEstimate { Text(t).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true) }
                         else if let e = timeError { errorText(e) }
                         else { loadingPlaceholder }
@@ -68,7 +67,7 @@ struct AIPanelView: View {
         .background(Color.surfaceRaised)
         .task(id: entry.id) {
             resetAll()
-            loadAll()
+            await loadAll()
         }
     }
 
@@ -101,7 +100,7 @@ struct AIPanelView: View {
         abbreviationDict = [:]
     }
 
-    private func loadAll() {
+    private func loadAll() async {
         // Always read the freshest copy from the library to avoid a stale value-type snapshot.
         // entry.id is stable; library.entries has the authoritative persisted cache.
         let e = library.entries.first(where: { $0.id == entry.id }) ?? entry
@@ -109,32 +108,32 @@ struct AIPanelView: View {
         if let s = e.aiSummary {
             summary = s
         } else {
-            loadSummary()
+            await loadSummary()
         }
 
         if let a = e.aiAbbreviations {
             abbreviationList = a
             abbreviationDict = Dictionary(uniqueKeysWithValues: a.entries.map { ($0.abbreviation, $0.meaning) })
         } else {
-            loadAbbreviations()
+            await loadAbbreviations()
         }
 
         if let m = e.aiMaterials {
             materials = m
         } else {
-            loadMaterials()
+            await loadMaterials()
         }
 
         if let d = e.aiDifficulty {
             difficulty = d
         } else {
-            loadDifficulty()
+            await loadDifficulty()
         }
 
         if let t = e.aiTimeEstimate {
             timeEstimate = t
         } else {
-            loadTimeEstimate()
+            await loadTimeEstimate()
         }
     }
 
@@ -142,31 +141,31 @@ struct AIPanelView: View {
         service.clearCache(for: entry.id)
         library.clearAICache(for: entry.id)
         summary = nil; summaryError = nil
-        loadSummary()
+        Task { await loadSummary() }
     }
     private func regenAbbreviations() {
         service.clearCache(for: entry.id)
         library.clearAICache(for: entry.id)
         abbreviationList = nil; abbreviationsError = nil; abbreviationDict = [:]
-        loadAbbreviations()
+        Task { await loadAbbreviations() }
     }
     private func regenMaterials() {
         service.clearCache(for: entry.id)
         library.clearAICache(for: entry.id)
         materials = nil; materialsError = nil
-        loadMaterials()
+        Task { await loadMaterials() }
     }
     private func regenDifficulty() {
         service.clearCache(for: entry.id)
         library.clearAICache(for: entry.id)
         difficulty = nil; difficultyError = nil
-        loadDifficulty()
+        Task { await loadDifficulty() }
     }
     private func regenTime() {
         service.clearCache(for: entry.id)
         library.clearAICache(for: entry.id)
         timeEstimate = nil; timeError = nil
-        loadTimeEstimate()
+        Task { await loadTimeEstimate() }
     }
 
     // MARK: - Content renderers
@@ -226,42 +225,42 @@ struct AIPanelView: View {
 
     // MARK: - Load actions
 
-    private func loadSummary() {
-        Task { do {
+    private func loadSummary() async {
+        do {
             let result = try await service.generateSummary(patternID: entry.id, patternText: patternText)
             summary = result
             library.updateAICache(for: entry.id, summary: result)
-        } catch { summaryError = error.localizedDescription } }
+        } catch { summaryError = error.localizedDescription }
     }
-    private func loadAbbreviations() {
-        Task { do {
+    private func loadAbbreviations() async {
+        do {
             let result = try await service.generateAbbreviations(patternID: entry.id, patternText: patternText)
             abbreviationList = result
             abbreviationDict = Dictionary(uniqueKeysWithValues: result.entries.map { ($0.abbreviation, $0.meaning) })
             library.updateAICache(for: entry.id, abbreviations: result)
-        } catch { abbreviationsError = error.localizedDescription } }
+        } catch { abbreviationsError = error.localizedDescription }
     }
-    private func loadMaterials() {
-        Task { do {
+    private func loadMaterials() async {
+        do {
             let result = try await service.extractMaterials(patternID: entry.id, patternText: patternText)
             materials = result
             library.updateAICache(for: entry.id, materials: result)
-        } catch { materialsError = error.localizedDescription } }
+        } catch { materialsError = error.localizedDescription }
     }
-    private func loadDifficulty() {
-        Task { do {
+    private func loadDifficulty() async {
+        do {
             let result = try await service.estimateDifficulty(patternID: entry.id, patternText: patternText)
             difficulty = result
             library.updateAICache(for: entry.id, difficulty: result)
-        } catch { difficultyError = error.localizedDescription } }
+        } catch { difficultyError = error.localizedDescription }
     }
-    private func loadTimeEstimate() {
-        Task { do {
+    private func loadTimeEstimate() async {
+        do {
             let result = try await service.estimateTime(
                 patternID: entry.id, patternText: patternText,
                 rowGoal: entry.rowGoal ?? 0, rowCount: entry.rowCount)
             timeEstimate = result
             library.updateAICache(for: entry.id, timeEstimate: result)
-        } catch { timeError = error.localizedDescription } }
+        } catch { timeError = error.localizedDescription }
     }
 }
