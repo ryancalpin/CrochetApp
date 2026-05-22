@@ -15,6 +15,12 @@ struct ContentView: View {
     @State private var patternScrollToRow: Int = 0
     @State private var focusMode = false
 
+    // Cached pattern text for the active entry. Loaded once when the entry changes
+    // (with a properly balanced security scope) instead of re-reading the file on
+    // every view update.
+    @State private var cachedPatternText: String? = nil
+    @State private var cachedPatternTextID: UUID? = nil
+
     var body: some View {
         HStack(spacing: 0) {
             // ── Sidebar ───────────────────────────────────────────────
@@ -50,7 +56,7 @@ struct ContentView: View {
                     // Mount AIPanelView ONLY when open so its .task never runs (no AI burst)
                     // while the panel is closed. The shared service (owned outside the panel)
                     // keeps the per-pattern cache alive across close/reopen.
-                    if #available(macOS 26.0, *), showAIPanel, let entry = library.activeEntry, let text = loadedPatternText {
+                    if #available(macOS 26.0, *), showAIPanel, let entry = library.activeEntry, let text = activePatternText {
                         resizableDivider
                         AIPanelView(
                             service: AIInsights.service,
@@ -115,6 +121,7 @@ struct ContentView: View {
         .onChange(of: library.activeEntryID) { _ in
             abbreviationDict = [:]
             patternScrollToRow = 0
+            reloadPatternText()
             // Kick off (or backfill) AI insight generation as soon as a pattern is
             // imported or opened. Idempotent + persisted, so this never re-bursts.
             if #available(macOS 26.0, *), let id = library.activeEntryID {
@@ -126,6 +133,7 @@ struct ContentView: View {
         }
         .onAppear {
             NSApp.mainWindow?.title = library.activeEntry?.displayName ?? "Crochet Helper"
+            reloadPatternText()
             if #available(macOS 26.0, *), let id = library.activeEntryID {
                 AIInsights.ensure(for: id, in: library)
             }
@@ -169,15 +177,27 @@ struct ContentView: View {
     }
 
     private var activeFileURL: URL? {
-        guard let entry = library.activeEntry else { return nil }
-        let url = entry.resolveURL()
-        url?.startAccessingSecurityScopedResource()
-        return url
+        // The consumers (MarkdownView, PDFKitView) each open their own security scope
+        // when they read the file, so we must NOT start one here (doing so leaked an
+        // unbalanced access for the lifetime of the view).
+        library.activeEntry?.resolveURL()
     }
 
-    private var loadedPatternText: String? {
-        guard let url = activeFileURL else { return nil }
-        return try? String(contentsOf: url, encoding: .utf8)
+    /// Cached text for the currently-active entry, or nil if not yet loaded for it.
+    private var activePatternText: String? {
+        guard let id = library.activeEntryID, id == cachedPatternTextID else { return nil }
+        return cachedPatternText
+    }
+
+    /// Read the active pattern's text once, with a balanced security scope, and cache it.
+    private func reloadPatternText() {
+        guard let entry = library.activeEntry, let url = entry.resolveURL() else {
+            cachedPatternText = nil; cachedPatternTextID = nil; return
+        }
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+        cachedPatternText = try? String(contentsOf: url, encoding: .utf8)
+        cachedPatternTextID = entry.id
     }
 }
 
