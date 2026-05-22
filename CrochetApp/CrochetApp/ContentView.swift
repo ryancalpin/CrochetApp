@@ -58,6 +58,7 @@ struct ContentView: View {
                         AIPanelView(
                             entry: entry,
                             patternText: text,
+                            library: library,
                             showAIPanel: $showAIPanel,
                             abbreviationDict: $abbreviationDict,
                             bannerDifficulty: $bannerDifficulty,

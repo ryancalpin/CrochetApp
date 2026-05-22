@@ -9,20 +9,30 @@ struct PatternEntry: Codable, Identifiable {
     var rowCount: Int
     var stitchCount: Int
     var autoResetStitch: Bool
+    var repeatCount: Int
+    var showRepeatCounter: Bool
 
     // MARK: - Goals
-    var rowGoal: Int?        // nil = no goal, no progress bar
-    var stitchGoal: Int?     // nil = no auto-advance
+    var rowGoal: Int?
+    var stitchGoal: Int?
+
+    // MARK: - Tags
+    var tags: [String]
 
     // MARK: - Annotations
-    // Key: paragraph index (0-based order of <p> and <li> in rendered HTML)
-    // Value: note text
-    var annotations: [Int: String]
+    // Key: first 64 chars of block text (fingerprint) — stable across paragraph index changes
+    var annotations: [String: String]
+
+    // MARK: - AI Cache
+    var aiSummary: PatternSummary?
+    var aiAbbreviations: AbbreviationList?
+    var aiMaterials: MaterialsBreakdown?
+    var aiDifficulty: String?
+    var aiTimeEstimate: String?
 
     init(url: URL) throws {
         self.id = UUID()
         self.displayName = url.deletingPathExtension().lastPathComponent
-        // Prefer security-scoped bookmark (sandboxed builds); fall back to minimal (dev/unsigned builds).
         if let data = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
             self.bookmark = data
         } else {
@@ -33,9 +43,42 @@ struct PatternEntry: Codable, Identifiable {
         self.rowCount = 0
         self.stitchCount = 0
         self.autoResetStitch = true
+        self.repeatCount = 0
+        self.showRepeatCounter = false
         self.rowGoal = nil
         self.stitchGoal = nil
+        self.tags = []
         self.annotations = [:]
+        self.aiSummary = nil
+        self.aiAbbreviations = nil
+        self.aiMaterials = nil
+        self.aiDifficulty = nil
+        self.aiTimeEstimate = nil
+    }
+
+    // Custom decode to handle optional new fields gracefully
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        displayName = try c.decode(String.self, forKey: .displayName)
+        bookmark = try c.decode(Data.self, forKey: .bookmark)
+        lastOpened = try c.decode(Date.self, forKey: .lastOpened)
+        isPinned = try c.decode(Bool.self, forKey: .isPinned)
+        rowCount = try c.decode(Int.self, forKey: .rowCount)
+        stitchCount = try c.decode(Int.self, forKey: .stitchCount)
+        autoResetStitch = try c.decodeIfPresent(Bool.self, forKey: .autoResetStitch) ?? true
+        repeatCount = try c.decodeIfPresent(Int.self, forKey: .repeatCount) ?? 0
+        showRepeatCounter = try c.decodeIfPresent(Bool.self, forKey: .showRepeatCounter) ?? false
+        rowGoal = try c.decodeIfPresent(Int.self, forKey: .rowGoal)
+        stitchGoal = try c.decodeIfPresent(Int.self, forKey: .stitchGoal)
+        tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        // Annotations stored as [String: String]; old Int-keyed data decodes fine (keys were "0","1" etc.)
+        annotations = try c.decodeIfPresent([String: String].self, forKey: .annotations) ?? [:]
+        aiSummary = try c.decodeIfPresent(PatternSummary.self, forKey: .aiSummary)
+        aiAbbreviations = try c.decodeIfPresent(AbbreviationList.self, forKey: .aiAbbreviations)
+        aiMaterials = try c.decodeIfPresent(MaterialsBreakdown.self, forKey: .aiMaterials)
+        aiDifficulty = try c.decodeIfPresent(String.self, forKey: .aiDifficulty)
+        aiTimeEstimate = try c.decodeIfPresent(String.self, forKey: .aiTimeEstimate)
     }
 
     func resolveURL() -> URL? {

@@ -27,7 +27,8 @@
 		NN3333333333333333333333 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NN4444444444444444444444 /* SettingsView.swift */; };
 		OO5555555555555555555555 /* PatternContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OO6666666666666666666666 /* PatternContentView.swift */; };
 		BB2222222222222222222222 /* PatternStatsBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1111111111111111111111 /* PatternStatsBannerView.swift */; };
-/* End PBXBuildFile section */
+		7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */; };
+		/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AA000001000000000000001B /* CrochetAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrochetAppApp.swift; sourceTree = "<group>"; };
@@ -53,7 +54,8 @@
 		OO6666666666666666666666 /* PatternContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternContentView.swift; sourceTree = "<group>"; };
 		BB1111111111111111111111 /* PatternStatsBannerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternStatsBannerView.swift; sourceTree = "<group>"; };
 		AA00000100000000000000AB /* CrochetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrochetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
+		9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
+		/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AA00000100000000000000BB /* Frameworks */ = {
@@ -74,6 +76,7 @@
 				AA000001000000000000004B /* MarkdownView.swift */,
 				AA000001000000000000005B /* CounterStore.swift */,
 				BB1234567890ABCDEF123456 /* PatternEntry.swift */,
+				9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */,
 				CC9876543210FEDCBA123456 /* PatternLibrary.swift */,
 				DD2222222222222222222222 /* PatternLibraryView.swift */,
 				EE4444444444444444444444 /* CounterBarView.swift */,
@@ -185,6 +188,7 @@
 				AA000001000000000000004A /* MarkdownView.swift in Sources */,
 				AA000001000000000000005A /* CounterStore.swift in Sources */,
 				BB1234567890ABCDEF654321 /* PatternEntry.swift in Sources */,
+				7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */,
 				CC9876543210FEDCBA654321 /* PatternLibrary.swift in Sources */,
 				DD1111111111111111111111 /* PatternLibraryView.swift in Sources */,
 				EE3333333333333333333333 /* CounterBarView.swift in Sources */,

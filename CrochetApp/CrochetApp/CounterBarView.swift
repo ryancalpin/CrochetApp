@@ -14,6 +14,7 @@ struct CounterBarView: View {
     @State private var rowGoalInput:    String = ""
     @State private var stitchGoalInput: String = ""
     @State private var showResetConfirmation = false
+    @State private var showRepeatResetConfirmation = false
 
     // Width below which secondary controls collapse into the ⋯ menu.
     private let compactBreakpoint: CGFloat = 500
@@ -24,6 +25,9 @@ struct CounterBarView: View {
             HStack(spacing: 10) {
                 rowPill
                 stitchPill
+                if entry?.showRepeatCounter == true {
+                    repeatPill
+                }
 
                 if !compact, let goal = entry?.rowGoal, goal > 0 {
                     rowProgressBar(current: store.rowCount, goal: goal)
@@ -34,10 +38,12 @@ struct CounterBarView: View {
                 if compact {
                     overflowMenu
                 } else {
+                    audioCueButton
                     if settings.showTimer {
-                        timerView
                         Divider().frame(height: 30)
+                        timerView
                     }
+                    Divider().frame(height: 30)
                     resetButton
                     if #available(macOS 26.0, *) {
                         Divider().frame(height: 30)
@@ -60,6 +66,16 @@ struct CounterBarView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Row and Stitch counts will be set to 0.")
+        }
+        .confirmationDialog(
+            "Reset repeat counter?",
+            isPresented: $showRepeatResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Reset", role: .destructive) { store.resetRepeat() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Repeat count will be set to 0.")
         }
     }
 
@@ -125,6 +141,66 @@ struct CounterBarView: View {
             }
             if entry?.rowGoal != nil {
                 Button("Clear Row Goal") { entry?.rowGoal = nil }
+            }
+            Divider()
+            if entry?.showRepeatCounter == true {
+                Button("Hide Repeat Counter") {
+                    guard let e = entry else { return }
+                    store.resetRepeat()
+                    entry?.showRepeatCounter = false
+                    // persist via library binding
+                    _ = e
+                }
+            } else {
+                Button("Add Repeat Counter") { entry?.showRepeatCounter = true }
+            }
+        }
+    }
+
+    // MARK: - Repeat Pill
+
+    private var repeatPill: some View {
+        pillShell(color: repeatColor) {
+            Button { withAnimation { store.decrementRepeat() } } label: {
+                Image(systemName: "minus")
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: pillHeight, height: pillHeight)
+                    .background(repeatColor.opacity(0.15))
+                    .foregroundColor(store.repeatCount == 0 ? .secondary : repeatColor)
+            }
+            .buttonStyle(.plain)
+            .disabled(store.repeatCount == 0)
+
+            Divider().frame(height: pillHeight)
+
+            VStack(spacing: 1) {
+                Text("REPEAT").font(.system(size: 9, weight: .semibold)).foregroundColor(repeatColor)
+                Text("\(store.repeatCount)")
+                    .font(.system(size: settings.counterSize.fontSize, weight: .bold, design: .rounded))
+                    .foregroundColor(repeatColor)
+                    .contentTransition(.numericText())
+                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: store.repeatCount)
+            }
+            .frame(minWidth: 44)
+            .padding(.horizontal, 6)
+
+            Divider().frame(height: pillHeight)
+
+            Button { withAnimation { store.incrementRepeat() } } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: pillHeight, height: pillHeight)
+                    .background(repeatColor.opacity(0.15))
+                    .foregroundColor(repeatColor)
+            }
+            .buttonStyle(.plain)
+        }
+        .help("Repeat counter — right-click to reset or hide")
+        .contextMenu {
+            Button("Reset Repeat") { showRepeatResetConfirmation = true }
+            Button("Hide Repeat Counter") {
+                store.resetRepeat()
+                entry?.showRepeatCounter = false
             }
         }
     }
@@ -213,8 +289,8 @@ struct CounterBarView: View {
                 .font(.system(size: 10)).foregroundColor(.secondary)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3).fill(Color.pink.opacity(0.2)).frame(height: 6)
-                    RoundedRectangle(cornerRadius: 3).fill(Color.pink)
+                    RoundedRectangle(cornerRadius: 3).fill(rowColor.opacity(0.2)).frame(height: 6)
+                    RoundedRectangle(cornerRadius: 3).fill(rowColor)
                         .frame(width: geo.size.width * fraction, height: 6)
                         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: fraction)
                 }
@@ -243,6 +319,24 @@ struct CounterBarView: View {
             Button(timer.isRunning ? "Pause" : "Resume") { timer.togglePause() }
             Button("Reset Timer") { timer.reset() }
         }
+    }
+
+    // MARK: - Audio cue button
+
+    private var audioCueButton: some View {
+        Button { settings.audioCueEnabled.toggle() } label: {
+            HStack(spacing: 4) {
+                Image(systemName: settings.audioCueEnabled ? "speaker.wave.2.fill" : "speaker.slash")
+                    .font(.system(size: 11))
+                Text("Row Cue").font(.system(size: 11))
+            }
+            .foregroundColor(settings.audioCueEnabled ? rowColor : .secondary)
+            .padding(.horizontal, 7).padding(.vertical, 4)
+            .background(settings.audioCueEnabled ? rowColor.opacity(0.12) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
+        .help(settings.audioCueEnabled ? "Row audio cue on — click to disable" : "Row audio cue off — click to enable")
     }
 
     // MARK: - Reset button
@@ -281,6 +375,8 @@ struct CounterBarView: View {
             Button(timer.isRunning ? "Pause Timer" : "Resume Timer") { timer.togglePause() }
             Button("Reset Timer") { timer.reset() }
             Divider()
+            Button(settings.audioCueEnabled ? "Disable Row Cue" : "Enable Row Cue") { settings.audioCueEnabled.toggle() }
+            Divider()
             Button("Reset Counters…") { showResetConfirmation = true }
             if #available(macOS 26.0, *) {
                 Divider()
@@ -297,8 +393,9 @@ struct CounterBarView: View {
 
     // MARK: - Colors
 
-    private var rowColor: Color { settings.pillColorScheme.rowColor }
-    private var stitchColor: Color { settings.pillColorScheme.stitchColor }
+    private var rowColor: Color    { settings.rowColor }
+    private var stitchColor: Color { settings.stitchColor }
+    private var repeatColor: Color { settings.repeatColor }
 }
 
 // MARK: - GoalInputPopover

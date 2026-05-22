@@ -14,7 +14,7 @@ struct SettingsView: View {
             ScrollView { shortcutsTab.padding(.bottom, 16) }
                 .tabItem { Label("Shortcuts", systemImage: "keyboard") }
         }
-        .frame(width: 520, height: 400)
+        .frame(width: 520, height: 440)
     }
 
     // MARK: - Counting
@@ -87,45 +87,71 @@ struct SettingsView: View {
                 .pickerStyle(.segmented)
             }
 
-            Section("Color Scheme") {
-                HStack(spacing: 10) {
-                    ForEach(AppSettings.PillColorScheme.allCases, id: \.self) { scheme in
-                        colorSwatch(scheme)
+            Section("Counter Colors") {
+                ColorPicker("Row counter", selection: Binding(
+                    get: { settings.rowColor },
+                    set: { settings.rowColor = $0 }
+                ), supportsOpacity: false)
+
+                ColorPicker("Stitch counter", selection: Binding(
+                    get: { settings.stitchColor },
+                    set: { settings.stitchColor = $0 }
+                ), supportsOpacity: false)
+
+                ColorPicker("Repeat counter", selection: Binding(
+                    get: { settings.repeatColor },
+                    set: { settings.repeatColor = $0 }
+                ), supportsOpacity: false)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Presets")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    HStack(spacing: 8) {
+                        ForEach(AppSettings.colorPresets) { preset in
+                            presetButton(preset)
+                        }
                     }
                 }
-                .padding(.vertical, 4)
+                .padding(.top, 2)
             }
         }
         .formStyle(.grouped)
     }
 
-    private func colorSwatch(_ scheme: AppSettings.PillColorScheme) -> some View {
-        let isSelected = settings.pillColorScheme == scheme
+    private func presetButton(_ preset: AppSettings.ColorPreset) -> some View {
+        let rowC    = Color(hex: preset.rowHex)    ?? .pink
+        let stitchC = Color(hex: preset.stitchHex) ?? .purple
+        let repeatC = Color(hex: preset.repeatHex) ?? .teal
+        let isActive = settings.rowColorHex == preset.rowHex
+                    && settings.stitchColorHex == preset.stitchHex
+
         return Button {
-            settings.pillColorScheme = scheme
+            settings.rowColorHex    = preset.rowHex
+            settings.stitchColorHex = preset.stitchHex
+            settings.repeatColorHex = preset.repeatHex
         } label: {
             VStack(spacing: 5) {
                 HStack(spacing: 3) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(scheme.rowColor)
-                        .frame(width: 24, height: 24)
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(scheme.stitchColor)
-                        .frame(width: 24, height: 24)
+                    RoundedRectangle(cornerRadius: 4).fill(rowC).frame(width: 18, height: 18)
+                    RoundedRectangle(cornerRadius: 4).fill(stitchC).frame(width: 18, height: 18)
+                    RoundedRectangle(cornerRadius: 4).fill(repeatC).frame(width: 18, height: 18)
                 }
-                Text(scheme.label)
-                    .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? .primary : .secondary)
+                Text(preset.name)
+                    .font(.system(size: 10, weight: isActive ? .semibold : .regular))
+                    .foregroundColor(isActive ? .primary : .secondary)
             }
-            .padding(7)
-            .background(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(isActive ? rowC.opacity(0.12) : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 1.5)
+                    .strokeBorder(isActive ? rowC.opacity(0.6) : Color.secondary.opacity(0.2), lineWidth: 1.5)
             )
         }
         .buttonStyle(.plain)
+        .help("Apply \(preset.name) preset")
     }
 
     // MARK: - Shortcuts

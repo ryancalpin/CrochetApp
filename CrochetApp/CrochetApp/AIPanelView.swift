@@ -4,6 +4,7 @@ import SwiftUI
 struct AIPanelView: View {
     let entry: PatternEntry
     let patternText: String
+    @ObservedObject var library: PatternLibrary
     @Binding var showAIPanel: Bool
     @Binding var abbreviationDict: [String: String]
     @Binding var bannerDifficulty: String?
@@ -15,14 +16,12 @@ struct AIPanelView: View {
     @State private var abbreviationList: AbbreviationList? = nil
     @State private var materials: MaterialsBreakdown? = nil
     @State private var difficulty: String? = nil
-    @State private var stitchResult: StitchCountResult? = nil
     @State private var timeEstimate: String? = nil
 
     @State private var summaryError: String? = nil
     @State private var abbreviationsError: String? = nil
     @State private var materialsError: String? = nil
     @State private var difficultyError: String? = nil
-    @State private var stitchError: String? = nil
     @State private var timeError: String? = nil
 
     var body: some View {
@@ -31,7 +30,6 @@ struct AIPanelView: View {
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    // Q&A is most interactive — keep it at the top
                     AIFeatureSection(title: "Ask a Question", isLoading: false, onRegenerate: {}) {
                         PatternQAView(service: service, patternText: patternText)
                     }
@@ -57,12 +55,6 @@ struct AIPanelView: View {
                     AIFeatureSection(title: "Difficulty", isLoading: service.isLoadingDifficulty, onRegenerate: regenDifficulty) {
                         if let d = difficulty { Text(d).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true) }
                         else if let e = difficultyError { errorText(e) }
-                        else { loadingPlaceholder }
-                    }
-                    Divider().padding(.horizontal, 12)
-                    AIFeatureSection(title: "Stitch Count Verifier", isLoading: service.isLoadingStitchVerifier, onRegenerate: regenStitch) {
-                        if let r = stitchResult { stitchVerifierContent(r) }
-                        else if let e = stitchError { errorText(e) }
                         else { loadingPlaceholder }
                     }
                     Divider().padding(.horizontal, 12)
@@ -106,26 +98,82 @@ struct AIPanelView: View {
     // MARK: - Reset / load
 
     private func resetAll() {
-        summary = nil; abbreviationList = nil; materials = nil; difficulty = nil
-        stitchResult = nil; timeEstimate = nil
-        summaryError = nil; abbreviationsError = nil; materialsError = nil; difficultyError = nil
-        stitchError = nil; timeError = nil
+        summary = nil; abbreviationList = nil; materials = nil; difficulty = nil; timeEstimate = nil
+        summaryError = nil; abbreviationsError = nil; materialsError = nil; difficultyError = nil; timeError = nil
         abbreviationDict = [:]
         bannerDifficulty = nil
         bannerTotalRows = nil
     }
 
     private func loadAll() {
-        loadSummary(); loadAbbreviations(); loadMaterials(); loadDifficulty()
-        loadStitchVerifier(); loadTimeEstimate()
+        // Always read the freshest copy from the library to avoid a stale value-type snapshot.
+        // entry.id is stable; library.entries has the authoritative persisted cache.
+        let e = library.entries.first(where: { $0.id == entry.id }) ?? entry
+
+        if let s = e.aiSummary {
+            summary = s
+            bannerTotalRows = s.totalRows == "Unknown" ? nil : s.totalRows
+        } else {
+            loadSummary()
+        }
+
+        if let a = e.aiAbbreviations {
+            abbreviationList = a
+            abbreviationDict = Dictionary(uniqueKeysWithValues: a.entries.map { ($0.abbreviation, $0.meaning) })
+        } else {
+            loadAbbreviations()
+        }
+
+        if let m = e.aiMaterials {
+            materials = m
+        } else {
+            loadMaterials()
+        }
+
+        if let d = e.aiDifficulty {
+            difficulty = d
+            bannerDifficulty = d
+        } else {
+            loadDifficulty()
+        }
+
+        if let t = e.aiTimeEstimate {
+            timeEstimate = t
+        } else {
+            loadTimeEstimate()
+        }
     }
 
-    private func regenSummary() { service.clearCache(for: entry.id); summary = nil; summaryError = nil; bannerTotalRows = nil; loadSummary() }
-    private func regenAbbreviations() { service.clearCache(for: entry.id); abbreviationList = nil; abbreviationsError = nil; abbreviationDict = [:]; loadAbbreviations() }
-    private func regenMaterials() { service.clearCache(for: entry.id); materials = nil; materialsError = nil; loadMaterials() }
-    private func regenDifficulty() { service.clearCache(for: entry.id); difficulty = nil; difficultyError = nil; bannerDifficulty = nil; loadDifficulty() }
-    private func regenStitch() { service.clearCache(for: entry.id); stitchResult = nil; stitchError = nil; loadStitchVerifier() }
-    private func regenTime() { service.clearCache(for: entry.id); timeEstimate = nil; timeError = nil; loadTimeEstimate() }
+    private func regenSummary() {
+        service.clearCache(for: entry.id)
+        library.clearAICache(for: entry.id)
+        summary = nil; summaryError = nil; bannerTotalRows = nil
+        loadSummary()
+    }
+    private func regenAbbreviations() {
+        service.clearCache(for: entry.id)
+        library.clearAICache(for: entry.id)
+        abbreviationList = nil; abbreviationsError = nil; abbreviationDict = [:]
+        loadAbbreviations()
+    }
+    private func regenMaterials() {
+        service.clearCache(for: entry.id)
+        library.clearAICache(for: entry.id)
+        materials = nil; materialsError = nil
+        loadMaterials()
+    }
+    private func regenDifficulty() {
+        service.clearCache(for: entry.id)
+        library.clearAICache(for: entry.id)
+        difficulty = nil; difficultyError = nil; bannerDifficulty = nil
+        loadDifficulty()
+    }
+    private func regenTime() {
+        service.clearCache(for: entry.id)
+        library.clearAICache(for: entry.id)
+        timeEstimate = nil; timeError = nil
+        loadTimeEstimate()
+    }
 
     // MARK: - Content renderers
 
@@ -168,28 +216,6 @@ struct AIPanelView: View {
         }
     }
 
-    private func stitchVerifierContent(_ r: StitchCountResult) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if r.issues.isEmpty {
-                Label("All rows verified — stitch counts add up correctly.", systemImage: "checkmark.circle.fill")
-                    .foregroundColor(.green).font(.system(size: 12))
-            } else {
-                Text("The following rows have stitch count mismatches:")
-                    .font(.system(size: 11)).foregroundColor(.secondary)
-                ForEach(r.issues) { issue in
-                    HStack(alignment: .top, spacing: 4) {
-                        Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange).font(.system(size: 10))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Row \(issue.rowNumber)").font(.system(size: 11, weight: .semibold))
-                            Text(issue.description).font(.system(size: 11)).foregroundColor(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private func labeledRow(_ label: String, _ value: String) -> some View {
         HStack(alignment: .top, spacing: 4) {
             Text("\(label):")
@@ -211,6 +237,7 @@ struct AIPanelView: View {
             let result = try await service.generateSummary(patternID: entry.id, patternText: patternText)
             summary = result
             bannerTotalRows = result.totalRows == "Unknown" ? nil : result.totalRows
+            library.updateAICache(for: entry.id, summary: result)
         } catch { summaryError = error.localizedDescription } }
     }
     private func loadAbbreviations() {
@@ -218,27 +245,31 @@ struct AIPanelView: View {
             let result = try await service.generateAbbreviations(patternID: entry.id, patternText: patternText)
             abbreviationList = result
             abbreviationDict = Dictionary(uniqueKeysWithValues: result.entries.map { ($0.abbreviation, $0.meaning) })
+            library.updateAICache(for: entry.id, abbreviations: result)
         } catch { abbreviationsError = error.localizedDescription } }
     }
     private func loadMaterials() {
-        Task { do { materials = try await service.extractMaterials(patternID: entry.id, patternText: patternText) }
-        catch { materialsError = error.localizedDescription } }
+        Task { do {
+            let result = try await service.extractMaterials(patternID: entry.id, patternText: patternText)
+            materials = result
+            library.updateAICache(for: entry.id, materials: result)
+        } catch { materialsError = error.localizedDescription } }
     }
     private func loadDifficulty() {
         Task { do {
             let result = try await service.estimateDifficulty(patternID: entry.id, patternText: patternText)
             difficulty = result
             bannerDifficulty = result
+            library.updateAICache(for: entry.id, difficulty: result)
         } catch { difficultyError = error.localizedDescription } }
     }
-    private func loadStitchVerifier() {
-        Task { do { stitchResult = try await service.verifyStitchCounts(patternID: entry.id, patternText: patternText) }
-        catch { stitchError = error.localizedDescription } }
-    }
     private func loadTimeEstimate() {
-        Task { do { timeEstimate = try await service.estimateTime(
-            patternID: entry.id, patternText: patternText,
-            rowGoal: entry.rowGoal ?? 0, rowCount: entry.rowCount)
+        Task { do {
+            let result = try await service.estimateTime(
+                patternID: entry.id, patternText: patternText,
+                rowGoal: entry.rowGoal ?? 0, rowCount: entry.rowCount)
+            timeEstimate = result
+            library.updateAICache(for: entry.id, timeEstimate: result)
         } catch { timeError = error.localizedDescription } }
     }
 }

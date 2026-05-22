@@ -2,15 +2,39 @@ import Foundation
 import Combine
 import AppKit
 
+// MARK: - Yarn Stash Model
+
+struct YarnEntry: Codable, Identifiable {
+    let id: UUID
+    var name: String
+    var weight: String   // e.g. "Worsted", "DK", "Bulky"
+    var colorHex: String // e.g. "#9B8ED4"
+    var yardage: Int     // total yards in stash
+
+    init(name: String, weight: String = "Worsted", colorHex: String = "#888888", yardage: Int = 0) {
+        self.id = UUID()
+        self.name = name
+        self.weight = weight
+        self.colorHex = colorHex
+        self.yardage = yardage
+    }
+}
+
 class PatternLibrary: ObservableObject {
     @Published var entries: [PatternEntry] = []
     @Published var activeEntryID: UUID? = nil
+    @Published var yarnStash: [YarnEntry] = []
 
     private let storageURL: URL = {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let dir = support.appendingPathComponent("CrochetApp", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("patterns.json")
+    }()
+
+    private let yarnURL: URL = {
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return support.appendingPathComponent("CrochetApp/yarn.json")
     }()
 
     // MARK: - Computed
@@ -32,6 +56,7 @@ class PatternLibrary: ObservableObject {
 
     init() {
         load()
+        loadYarn()
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(appWillTerminate),
@@ -60,12 +85,13 @@ class PatternLibrary: ObservableObject {
         activeEntryID = entryID
     }
 
-    func updateActiveCounters(row: Int, stitch: Int, autoReset: Bool) {
+    func updateActiveCounters(row: Int, stitch: Int, repeat repeatCount: Int, autoReset: Bool) {
         guard let id = activeEntryID,
               let i = entries.firstIndex(where: { $0.id == id }) else { return }
-        let changed = entries[i].rowCount != row || entries[i].stitchCount != stitch
+        let changed = entries[i].rowCount != row || entries[i].stitchCount != stitch || entries[i].repeatCount != repeatCount
         entries[i].rowCount = row
         entries[i].stitchCount = stitch
+        entries[i].repeatCount = repeatCount
         entries[i].autoResetStitch = autoReset
         if changed { entries[i].lastOpened = Date() }
         save()
@@ -83,15 +109,85 @@ class PatternLibrary: ObservableObject {
         save()
     }
 
+    func toggleRepeatCounter(entryID: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
+        entries[i].showRepeatCounter.toggle()
+        if !entries[i].showRepeatCounter { entries[i].repeatCount = 0 }
+        save()
+    }
+
     /// Called from AnnotationBridge when JS saves or deletes a note.
-    func updateNote(index: Int, text: String?) {
+    /// Key is a text fingerprint (first 64 chars of block text).
+    func updateNote(key: String, text: String?) {
         guard let id = activeEntryID,
               let i = entries.firstIndex(where: { $0.id == id }) else { return }
         if let text = text, !text.isEmpty {
-            entries[i].annotations[index] = text
+            entries[i].annotations[key] = text
         } else {
-            entries[i].annotations.removeValue(forKey: index)
+            entries[i].annotations.removeValue(forKey: key)
         }
+        save()
+    }
+
+    // MARK: - Tags
+
+    func addTag(_ tag: String, to entryID: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
+        let cleaned = tag.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !cleaned.isEmpty, !entries[i].tags.contains(cleaned) else { return }
+        entries[i].tags.append(cleaned)
+        save()
+    }
+
+    func removeTag(_ tag: String, from entryID: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
+        entries[i].tags.removeAll { $0 == tag }
+        save()
+    }
+
+    // MARK: - Yarn Stash
+
+    func addYarn(_ yarn: YarnEntry) {
+        yarnStash.append(yarn)
+        saveYarn()
+    }
+
+    func removeYarn(id: UUID) {
+        yarnStash.removeAll { $0.id == id }
+        saveYarn()
+    }
+
+    func updateYarn(_ yarn: YarnEntry) {
+        guard let i = yarnStash.firstIndex(where: { $0.id == yarn.id }) else { return }
+        yarnStash[i] = yarn
+        saveYarn()
+    }
+
+    /// Persist AI analysis results for a pattern so they don't need to be re-run on next launch.
+    func updateAICache(
+        for entryID: UUID,
+        summary: PatternSummary? = nil,
+        abbreviations: AbbreviationList? = nil,
+        materials: MaterialsBreakdown? = nil,
+        difficulty: String? = nil,
+        timeEstimate: String? = nil
+    ) {
+        guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
+        if let v = summary { entries[i].aiSummary = v }
+        if let v = abbreviations { entries[i].aiAbbreviations = v }
+        if let v = materials { entries[i].aiMaterials = v }
+        if let v = difficulty { entries[i].aiDifficulty = v }
+        if let v = timeEstimate { entries[i].aiTimeEstimate = v }
+        save()
+    }
+
+    func clearAICache(for entryID: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
+        entries[i].aiSummary = nil
+        entries[i].aiAbbreviations = nil
+        entries[i].aiMaterials = nil
+        entries[i].aiDifficulty = nil
+        entries[i].aiTimeEstimate = nil
         save()
     }
 
@@ -108,11 +204,23 @@ class PatternLibrary: ObservableObject {
         entries = decoded
     }
 
+    private func saveYarn() {
+        guard let data = try? JSONEncoder().encode(yarnStash) else { return }
+        try? data.write(to: yarnURL, options: .atomic)
+    }
+
+    private func loadYarn() {
+        guard let data = try? Data(contentsOf: yarnURL),
+              let decoded = try? JSONDecoder().decode([YarnEntry].self, from: data) else { return }
+        yarnStash = decoded
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
 
     @objc private func appWillTerminate() {
         save()
+        saveYarn()
     }
 }

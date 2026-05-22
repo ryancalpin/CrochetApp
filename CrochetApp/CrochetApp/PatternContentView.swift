@@ -13,7 +13,7 @@ struct PatternContentView: View {
         Group {
             if let url = fileURL {
                 if url.pathExtension.lowercased() == "pdf" {
-                    PDFKitView(url: url)
+                    PDFKitView(url: url, scrollToRow: scrollToRow)
                 } else {
                     MarkdownView(fileURL: url, library: library,
                                  scrollToRow: scrollToRow, abbreviationDict: abbreviationDict)
@@ -30,6 +30,7 @@ struct PatternContentView: View {
 
 struct PDFKitView: NSViewRepresentable {
     let url: URL
+    var scrollToRow: Int = 0
 
     func makeNSView(context: Context) -> PDFView {
         let view = PDFView()
@@ -37,14 +38,43 @@ struct PDFKitView: NSViewRepresentable {
         view.displayMode = .singlePageContinuous
         view.displayDirection = .vertical
         view.backgroundColor = NSColor(named: "viewBackground") ?? .windowBackgroundColor
+        context.coordinator.pdfView = view
         return view
     }
 
     func updateNSView(_ pdfView: PDFView, context: Context) {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-        if let doc = PDFDocument(url: url) {
-            pdfView.document = doc
+
+        // Only reload document if URL changed
+        if context.coordinator.lastURL != url {
+            context.coordinator.lastURL = url
+            context.coordinator.lastScrollRow = 0
+            if let doc = PDFDocument(url: url) {
+                pdfView.document = doc
+            }
         }
+
+        // Scroll to row if changed
+        if scrollToRow != context.coordinator.lastScrollRow, scrollToRow > 0,
+           let doc = pdfView.document {
+            context.coordinator.lastScrollRow = scrollToRow
+            let terms = ["Row \(scrollToRow)", "Rnd \(scrollToRow)", "Round \(scrollToRow)"]
+            for term in terms {
+                if let sel = doc.findString(term, withOptions: .caseInsensitive).first {
+                    pdfView.go(to: sel)
+                    pdfView.setCurrentSelection(sel, animate: true)
+                    break
+                }
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator {
+        weak var pdfView: PDFView?
+        var lastURL: URL?
+        var lastScrollRow: Int = 0
     }
 }

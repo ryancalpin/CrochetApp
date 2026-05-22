@@ -1,7 +1,8 @@
 import WebKit
 
 /// Receives messages from the annotation JavaScript running in WKWebView.
-/// Message format: { "action": "save" | "delete", "index": Int, "text": String }
+/// Message format: { "action": "save" | "delete", "key": String, "text": String }
+/// Key is the first 64 characters of the block's text content (fingerprint).
 final class AnnotationBridge: NSObject, WKScriptMessageHandler {
 
     weak var library: PatternLibrary?
@@ -17,15 +18,15 @@ final class AnnotationBridge: NSObject, WKScriptMessageHandler {
         guard message.name == "AnnotationBridge",
               let body = message.body as? [String: Any],
               let action = body["action"] as? String,
-              let index = body["index"] as? Int
+              let key = body["key"] as? String
         else { return }
 
         switch action {
         case "save":
             let text = (body["text"] as? String) ?? ""
-            library?.updateNote(index: index, text: text.isEmpty ? nil : text)
+            library?.updateNote(key: key, text: text.isEmpty ? nil : text)
         case "delete":
-            library?.updateNote(index: index, text: nil)
+            library?.updateNote(key: key, text: nil)
         default:
             break
         }
