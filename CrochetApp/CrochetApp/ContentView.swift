@@ -113,9 +113,6 @@ struct ContentView: View {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) { focusMode.toggle() }
         }
         .onChange(of: showAIPanel) { UserDefaults.standard.aiPanelOpen = $0 }
-        .onChange(of: library.activeEntry?.displayName) { name in
-            NSApp.mainWindow?.title = name ?? "Crochet Helper"
-        }
         .onChange(of: library.activeEntryID) { _ in
             abbreviationDict = [:]
             reloadPatternText()
@@ -126,7 +123,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            NSApp.mainWindow?.title = library.activeEntry?.displayName ?? "Crochet Helper"
+            NSApp.mainWindow?.title = "Looplet"
             reloadPatternText()
             if #available(macOS 26.0, *), let id = library.activeEntryID {
                 AIInsights.ensure(for: id, in: library)

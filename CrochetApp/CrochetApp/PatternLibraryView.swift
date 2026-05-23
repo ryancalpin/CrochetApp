@@ -126,7 +126,7 @@ struct PatternLibraryView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Image(systemName: sidebarTab == .yarn ? "tray.full" : "doc.text")
+            Image(systemName: "square.stack.3d.up.fill")
                 .foregroundColor(legibleAccent)
             Text("Library").font(.system(.headline))
             Spacer()
@@ -146,11 +146,26 @@ struct PatternLibraryView: View {
     // MARK: - Tab picker
 
     private var tabPicker: some View {
-        Picker("", selection: $sidebarTab) {
-            ForEach(SidebarTab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+        HStack(spacing: 4) {
+            ForEach(SidebarTab.allCases, id: \.self) { tab in
+                let isSelected = sidebarTab == tab
+                Text(tab.rawValue)
+                    .font(.system(.subheadline, weight: isSelected ? .semibold : .medium))
+                    .foregroundColor(isSelected ? .white : .textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 7)
+                    .background(
+                        RoundedRectangle(cornerRadius: 7)
+                            .fill(isSelected ? Color.appAccent : Color.clear)
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.15)) { sidebarTab = tab }
+                    }
+            }
         }
-        .pickerStyle(.segmented)
-        .tint(Color.appAccent)
+        .padding(4)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.surfaceRaised))
         .padding(.horizontal, 10).padding(.vertical, 8)
         .background(Color.surfaceSidebar)
         .overlay(alignment: .bottom) { Divider() }

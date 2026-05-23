@@ -84,7 +84,7 @@ struct SettingsView: View {
             }
 
             Section("App Theme") {
-                HStack(spacing: 18) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 14) {
                     ForEach(AppTheme.allCases) { theme in
                         VStack(spacing: 6) {
                             ZStack {

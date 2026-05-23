@@ -6,16 +6,20 @@ import SwiftUI
 /// for light and dark. Choosing a theme re-skins the whole UI cohesively, so chrome
 /// no longer borrows the (independent) counter colors.
 enum AppTheme: String, CaseIterable, Identifiable {
-    case plum, amber, rose, slate
+    case plum, amber, rose, slate, forest, teal, sand, graphite
 
     var id: String { rawValue }
 
     var label: String {
         switch self {
-        case .plum:  return "Plum"
-        case .amber: return "Amber"
-        case .rose:  return "Rose"
-        case .slate: return "Slate"
+        case .plum:     return "Plum"
+        case .amber:    return "Amber"
+        case .rose:     return "Rose"
+        case .slate:    return "Slate"
+        case .forest:   return "Forest"
+        case .teal:     return "Teal"
+        case .sand:     return "Sand"
+        case .graphite: return "Graphite"
         }
     }
 
@@ -63,6 +67,38 @@ enum AppTheme: String, CaseIterable, Identifiable {
                 textL: "#25303B", textD: "#DCE6F1",
                 text2L: "#5E6E7E", text2D: "#8E9EAF",
                 divL: "#DBE3EC", divD: "#232C35")
+        case .forest:
+            return Palette(accent: "#4E9A6B",
+                surfaceL: "#F1F7F2", surfaceD: "#141A16",
+                raisedL: "#FFFFFF", raisedD: "#1F2922",
+                sidebarL: "#E5F0E8", sidebarD: "#101510",
+                textL: "#25332B", textD: "#DCEFE0",
+                text2L: "#5E7064", text2D: "#8EAF98",
+                divL: "#DBEADF", divD: "#232E26")
+        case .teal:
+            return Palette(accent: "#2FA3A8",
+                surfaceL: "#EFF6F7", surfaceD: "#121A1B",
+                raisedL: "#FFFFFF", raisedD: "#1D2829",
+                sidebarL: "#E2EFF0", sidebarD: "#0F1516",
+                textL: "#213437", textD: "#D6EEEF",
+                text2L: "#5A6E70", text2D: "#8CA8AA",
+                divL: "#D6E7E8", divD: "#21302F")
+        case .sand:
+            return Palette(accent: "#B08A5A",
+                surfaceL: "#F8F4ED", surfaceD: "#1A1713",
+                raisedL: "#FFFFFF", raisedD: "#26221C",
+                sidebarL: "#F0EAE0", sidebarD: "#15120E",
+                textL: "#332E26", textD: "#EAE3D5",
+                text2L: "#6E665A", text2D: "#A89E8C",
+                divL: "#E7E0D2", divD: "#2D281F")
+        case .graphite:
+            return Palette(accent: "#828A94",
+                surfaceL: "#F4F5F6", surfaceD: "#161719",
+                raisedL: "#FFFFFF", raisedD: "#212327",
+                sidebarL: "#E9EBED", sidebarD: "#131416",
+                textL: "#2A2D30", textD: "#E4E6E9",
+                text2L: "#5F6469", text2D: "#969A9F",
+                divL: "#DEE0E3", divD: "#2A2C30")
         }
     }
 
