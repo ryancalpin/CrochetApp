@@ -19,6 +19,8 @@ struct PatternLibraryView: View {
     @State private var renameText: String = ""
     @State private var sidebarTab: SidebarTab = .patterns
     @State private var hoveredEntryID: UUID? = nil
+    @State private var yarnToEdit: YarnEntry? = nil
+    @State private var hoveredYarnID: UUID? = nil
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -112,6 +114,7 @@ struct PatternLibraryView: View {
             Button("Cancel", role: .cancel) {}
         } message: { Text("The file will not be deleted from disk.") }
         .sheet(isPresented: $showAddYarn) { AddYarnSheet(library: library) }
+        .sheet(item: $yarnToEdit) { yarn in AddYarnSheet(library: library, editing: yarn) }
         .sheet(isPresented: $showAddTag) {
             if let id = tagTargetID, let entry = library.entries.first(where: { $0.id == id }) {
                 AddTagSheet(entry: entry, library: library)
@@ -438,22 +441,42 @@ struct PatternLibraryView: View {
     }
 
     private func yarnRow(_ yarn: YarnEntry) -> some View {
-        HStack(spacing: 10) {
+        let isHovered = hoveredYarnID == yarn.id
+        return HStack(spacing: 10) {
             Circle()
                 .fill(Color(hex: yarn.colorHex) ?? .gray)
                 .frame(width: 14, height: 14)
                 .overlay(Circle().strokeBorder(.white.opacity(0.2), lineWidth: 0.5))
             VStack(alignment: .leading, spacing: 2) {
                 Text(yarn.name).font(Typo.rowTitle).foregroundColor(.textPrimary).lineLimit(1)
-                Text("\(yarn.weight) · \(yarn.yardage) yds")
+                Text(yarn.yardage > 0 ? "\(yarn.weight) · \(yarn.yardage) yds" : yarn.weight)
                     .font(Typo.metadata).foregroundColor(.textSecondary)
             }
             Spacer()
+            Menu {
+                Button("Edit…") { yarnToEdit = yarn }
+                Divider()
+                Button("Remove", role: .destructive) { library.removeYarn(id: yarn.id) }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.callout)
+                    .foregroundColor(.textSecondary)
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .opacity(isHovered ? 1 : 0.4)
+            .accessibilityLabel("Yarn options")
         }
         .padding(.horizontal, 10).padding(.vertical, 7)
         .padding(.horizontal, 6)
         .contentShape(Rectangle())
+        .onHover { hovering in hoveredYarnID = hovering ? yarn.id : (hoveredYarnID == yarn.id ? nil : hoveredYarnID) }
         .contextMenu {
+            Button("Edit…") { yarnToEdit = yarn }
+            Divider()
             Button("Remove", role: .destructive) { library.removeYarn(id: yarn.id) }
         }
     }
@@ -592,36 +615,46 @@ struct RenameSheet: View {
     }
 }
 
-// MARK: - Add Yarn Sheet
+// MARK: - Add / Edit Yarn Sheet
 
 struct AddYarnSheet: View {
     @ObservedObject var library: PatternLibrary
+    /// When non-nil, the sheet edits this existing stash entry instead of adding a new one.
+    let editing: YarnEntry?
+
     @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
-    @State private var weight = "Worsted"
-    @State private var colorHex = "#9B8ED4"
-    @State private var yardage = ""
+    @State private var name: String
+    @State private var weight: String
+    @State private var color: Color
+    @State private var yardage: String
     @FocusState private var focused: Bool
 
     private let weights = ["Fingering", "Sport", "DK", "Worsted", "Aran", "Bulky", "Super Bulky"]
 
+    init(library: PatternLibrary, editing: YarnEntry? = nil) {
+        self.library = library
+        self.editing = editing
+        _name = State(initialValue: editing?.name ?? "")
+        _weight = State(initialValue: editing?.weight ?? "Worsted")
+        _color = State(initialValue: editing.flatMap { Color(hex: $0.colorHex) } ?? (Color(hex: "#9B8ED4") ?? .purple))
+        _yardage = State(initialValue: editing.map { $0.yardage > 0 ? "\($0.yardage)" : "" } ?? "")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Add to Yarn Stash").font(.headline)
+            Text(editing == nil ? "Add to Yarn Stash" : "Edit Yarn").font(.headline)
             TextField("Yarn name", text: $name).textFieldStyle(.roundedBorder).focused($focused)
             Picker("Weight", selection: $weight) {
                 ForEach(weights, id: \.self) { Text($0).tag($0) }
             }
-            HStack {
-                TextField("Color hex (e.g. #9B8ED4)", text: $colorHex).textFieldStyle(.roundedBorder)
-                Circle().fill(Color(hex: colorHex) ?? .gray).frame(width: 22, height: 22)
-                    .overlay(Circle().strokeBorder(.secondary.opacity(0.3), lineWidth: 1))
-            }
+            ColorPicker("Color", selection: $color, supportsOpacity: false)
             TextField("Yardage (optional)", text: $yardage).textFieldStyle(.roundedBorder)
             HStack {
                 Button("Cancel") { dismiss() }.buttonStyle(.bordered)
                 Spacer()
-                Button("Add") { save() }.buttonStyle(.borderedProminent).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                Button(editing == nil ? "Add" : "Save") { save() }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
         .padding(20).frame(width: 320)
@@ -629,13 +662,22 @@ struct AddYarnSheet: View {
     }
 
     private func save() {
-        let yarn = YarnEntry(
-            name: name.trimmingCharacters(in: .whitespaces),
-            weight: weight,
-            colorHex: colorHex.isEmpty ? "#888888" : colorHex,
-            yardage: Int(yardage) ?? 0
-        )
-        library.addYarn(yarn)
+        let trimmedName = name.trimmingCharacters(in: .whitespaces)
+        if var existing = editing {
+            existing.name = trimmedName
+            existing.weight = weight
+            existing.colorHex = color.hexString
+            existing.yardage = Int(yardage) ?? 0
+            library.updateYarn(existing)
+        } else {
+            let yarn = YarnEntry(
+                name: trimmedName,
+                weight: weight,
+                colorHex: color.hexString,
+                yardage: Int(yardage) ?? 0
+            )
+            library.addYarn(yarn)
+        }
         dismiss()
     }
 }

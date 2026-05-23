@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import PDFKit
 
 struct ContentView: View {
     @ObservedObject var library: PatternLibrary
@@ -187,7 +188,12 @@ struct ContentView: View {
         }
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-        cachedPatternText = try? String(contentsOf: url, encoding: .utf8)
+        if url.pathExtension.lowercased() == "pdf" {
+            // PDFs aren't UTF-8 text; pull the extracted text layer so AI features work.
+            cachedPatternText = PDFDocument(url: url)?.string
+        } else {
+            cachedPatternText = try? String(contentsOf: url, encoding: .utf8)
+        }
         cachedPatternTextID = entry.id
     }
 }

@@ -59,7 +59,7 @@
 		AA000001000000000000006B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA000001000000000000007B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA000001000000000000008B /* CrochetApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CrochetApp.entitlements; sourceTree = "<group>"; };
-		AA00000100000000000000AB /* CrochetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrochetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA00000100000000000000AB /* CrochetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Looplet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB1234567890ABCDEF123456 /* PatternEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternEntry.swift; sourceTree = "<group>"; };
 		CC9876543210FEDCBA123456 /* PatternLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternLibrary.swift; sourceTree = "<group>"; };
 		CS2222222222222222222222 /* CloudSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudSync.swift; sourceTree = "<group>"; };
@@ -466,7 +466,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.prism.CrochetApp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Looplet;
+				PRODUCT_MODULE_NAME = CrochetApp;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -492,7 +493,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.prism.CrochetApp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Looplet;
+				PRODUCT_MODULE_NAME = CrochetApp;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -511,7 +513,7 @@
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrochetApp.app/Contents/MacOS/CrochetApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Looplet.app/Contents/MacOS/Looplet";
 			};
 			name = Debug;
 		};
@@ -527,7 +529,7 @@
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrochetApp.app/Contents/MacOS/CrochetApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Looplet.app/Contents/MacOS/Looplet";
 			};
 			name = Release;
 		};
