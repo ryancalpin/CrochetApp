@@ -211,7 +211,13 @@ struct MarkdownConverter {
     }
 
     // MARK: - Full HTML Document
-    static func htmlDocument(body: String, title: String = "Crochet Pattern", accentHex: String = "#7B6FA0") -> String {
+    /// Renders the pattern document using the supplied theme palette so the document
+    /// background, text, dividers, and accent all match the app's selected theme.
+    static func htmlDocument(
+        body: String,
+        title: String = "Crochet Pattern",
+        palette: AppTheme.Palette = AppSettings.shared.appTheme.palette
+    ) -> String {
         return """
         <!DOCTYPE html>
         <html lang="en">
@@ -220,25 +226,25 @@ struct MarkdownConverter {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>\(title)</title>
         <style>
-          /* Palette matches the app's design tokens (surface / text / divider) so the
-             document blends seamlessly with the rest of the UI. */
+          /* Palette is sourced from the app's selected AppTheme (surface / text /
+             divider / accent) so the document blends seamlessly with the rest of the UI. */
           :root {
-            --bg: #FBF6EF;        /* surface */
-            --fg: #3A2F26;        /* textPrimary */
-            --muted: #7A6A58;     /* textSecondary */
-            --accent: \(accentHex);
-            --border: #ECE0D0;    /* divider */
-            --raised: #FFFFFF;    /* surfaceRaised */
-            --row-alt: rgba(58, 47, 38, 0.04);
+            --bg: \(palette.surfaceL);        /* surface */
+            --fg: \(palette.textL);        /* textPrimary */
+            --muted: \(palette.text2L);     /* textSecondary */
+            --accent: \(palette.accent);
+            --border: \(palette.divL);    /* divider */
+            --raised: \(palette.raisedL);    /* surfaceRaised */
+            --row-alt: rgba(0, 0, 0, 0.04);
           }
           @media (prefers-color-scheme: dark) {
             :root {
-              --bg: #1C1813;
-              --fg: #ECE0D2;
-              --muted: #A99E8E;
-              --accent: \(accentHex);
-              --border: #302A21;
-              --raised: #29241D;
+              --bg: \(palette.surfaceD);
+              --fg: \(palette.textD);
+              --muted: \(palette.text2D);
+              --accent: \(palette.accent);
+              --border: \(palette.divD);
+              --raised: \(palette.raisedD);
               --row-alt: rgba(255, 255, 255, 0.035);
             }
           }
@@ -639,8 +645,8 @@ struct MarkdownView: View {
         .onChange(of: fileURL) { newURL in
             loadFile(url: newURL)
         }
-        .onChange(of: settings.rowColorHex) { _ in
-            // Regenerate HTML so CSS accent color reflects the new theme color.
+        .onChange(of: settings.appTheme) { _ in
+            // Regenerate HTML so the document palette reflects the new theme.
             reloadHTML()
         }
         .onAppear {
@@ -654,7 +660,7 @@ struct MarkdownView: View {
         htmlContent = MarkdownConverter.htmlDocument(
             body: body,
             title: url.deletingPathExtension().lastPathComponent,
-            accentHex: settings.rowColorHex
+            palette: AppSettings.shared.appTheme.palette
         )
     }
 
@@ -669,7 +675,7 @@ struct MarkdownView: View {
         isLoading = true
         errorMessage = nil
 
-        let accentHex = settings.rowColorHex
+        let palette = AppSettings.shared.appTheme.palette
 
         DispatchQueue.global(qos: .userInitiated).async {
             do {
@@ -682,7 +688,7 @@ struct MarkdownView: View {
                 let fullHTML = MarkdownConverter.htmlDocument(
                     body: body,
                     title: url.deletingPathExtension().lastPathComponent,
-                    accentHex: accentHex
+                    palette: palette
                 )
 
                 DispatchQueue.main.async {

@@ -69,7 +69,7 @@ struct PatternQAView: View {
                     } label: {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 20))
-                            .foregroundColor(question.isEmpty ? .secondary : .accentColor)
+                            .foregroundColor(question.isEmpty ? .secondary : Color.appAccent)
                     }
                     .buttonStyle(.plain)
                     .disabled(question.isEmpty)

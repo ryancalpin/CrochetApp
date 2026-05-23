@@ -71,7 +71,7 @@ struct SettingsView: View {
 
     private var appearanceTab: some View {
         Form {
-            Section("Theme") {
+            Section("Appearance") {
                 Picker("Appearance", selection: Binding(
                     get: { settings.appearanceMode },
                     set: { settings.appearanceMode = $0 }
@@ -81,6 +81,44 @@ struct SettingsView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+            }
+
+            Section("App Theme") {
+                HStack(spacing: 18) {
+                    ForEach(AppTheme.allCases) { theme in
+                        VStack(spacing: 6) {
+                            ZStack {
+                                Circle()
+                                    .fill(theme.accentColor)
+                                    .frame(width: 28, height: 28)
+                                if settings.appTheme == theme {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .overlay(
+                                Circle().strokeBorder(
+                                    Color.appAccent,
+                                    lineWidth: settings.appTheme == theme ? 3 : 0
+                                )
+                            )
+                            Text(theme.label)
+                                .font(.caption)
+                                .foregroundColor(settings.appTheme == theme ? .primary : .secondary)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture { settings.appTheme = theme }
+                        .help("Use the \(theme.label) theme")
+                        .accessibilityLabel("\(theme.label) theme")
+                        .accessibilityAddTraits(settings.appTheme == theme ? [.isButton, .isSelected] : .isButton)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 4)
+                Text("Sets the app's accent and palette for chrome (selection, buttons, links, AI, and the document). Counter pill colors are set separately below.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
 
             Section("Counter Bar") {

@@ -33,7 +33,7 @@ struct PDFKitView: NSViewRepresentable {
         view.autoScales = true
         view.displayMode = .singlePageContinuous
         view.displayDirection = .vertical
-        view.backgroundColor = NSColor(named: "surface") ?? .windowBackgroundColor
+        view.backgroundColor = ThemeColor.surfaceNS
         context.coordinator.pdfView = view
         context.coordinator.accessing = url.startAccessingSecurityScopedResource()
         view.document = PDFDocument(url: url)

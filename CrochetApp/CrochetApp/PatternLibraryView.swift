@@ -24,8 +24,8 @@ struct PatternLibraryView: View {
 
     enum SidebarTab: String, CaseIterable { case patterns = "Patterns", yarn = "Yarn" }
 
-    private var accentColor: Color { settings.rowColor }
-    private var legibleAccent: Color { accentColor.legible(in: colorScheme) }
+    private var accentColor: Color { Color.appAccent }
+    private var legibleAccent: Color { Color.appAccent }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -150,6 +150,7 @@ struct PatternLibraryView: View {
             ForEach(SidebarTab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
         }
         .pickerStyle(.segmented)
+        .tint(Color.appAccent)
         .padding(.horizontal, 10).padding(.vertical, 8)
         .background(Color.surfaceSidebar)
         .overlay(alignment: .bottom) { Divider() }

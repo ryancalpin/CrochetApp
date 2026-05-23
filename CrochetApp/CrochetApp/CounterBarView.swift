@@ -192,7 +192,7 @@ struct CounterBarView: View {
     @ViewBuilder
     private func rowProgressBar(current: Int, goal: Int) -> some View {
         let fraction = min(Double(current) / Double(goal), 1.0)
-        let fill = settings.rowColor.legible(in: colorScheme)
+        let fill = Color.appAccent
         VStack(alignment: .leading, spacing: 4) {
             Text("\(current) / \(goal) rows")
                 .font(Typo.metadata).foregroundColor(.textSecondary)
@@ -239,9 +239,9 @@ struct CounterBarView: View {
                     .font(.callout)
                 Text("Row Cue").font(.callout)
             }
-            .foregroundColor(settings.audioCueEnabled ? rowColor : .textSecondary)
+            .foregroundColor(settings.audioCueEnabled ? Color.appAccent : .textSecondary)
             .padding(.horizontal, 8).padding(.vertical, 5)
-            .background(settings.audioCueEnabled ? rowColor.opacity(0.12) : Color.clear)
+            .background(settings.audioCueEnabled ? Color.appAccent.opacity(0.12) : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
@@ -271,7 +271,7 @@ struct CounterBarView: View {
 
     @available(macOS 26.0, *)
     private var aiToggleButton: some View {
-        let aiAccent = Color.purple.legible(in: colorScheme)
+        let aiAccent = Color.appAccent
         return Button { showAIPanel.toggle() } label: {
             HStack(spacing: 6) {
                 Image(systemName: "sparkles").font(.system(.callout, weight: .semibold))
@@ -318,10 +318,6 @@ struct CounterBarView: View {
         .menuStyle(.borderlessButton)
         .fixedSize()
     }
-
-    // MARK: - Colors
-
-    private var rowColor: Color { settings.rowColor.legible(in: colorScheme) }
 }
 
 // MARK: - GoalInputPopover

@@ -70,7 +70,7 @@ struct AIPanelView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkles").foregroundColor(.purple)
+            Image(systemName: "sparkles").foregroundColor(Color.appAccent)
             Text("AI Assistant").font(.system(.headline))
             Spacer()
             Button { showAIPanel = false } label: {

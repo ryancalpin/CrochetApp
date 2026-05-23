@@ -59,6 +59,14 @@ final class AppSettings: ObservableObject {
     /// Play a subtle tick sound when incrementing a row.
     @AppStorage("crochet.audioCueEnabled") var audioCueEnabled: Bool = false
 
+    // MARK: - App theme (coordinated accent + background palette)
+
+    @AppStorage("crochet.appTheme") private var appThemeRaw = AppTheme.plum.rawValue
+    var appTheme: AppTheme {
+        get { AppTheme(rawValue: appThemeRaw) ?? .plum }
+        set { appThemeRaw = newValue.rawValue }
+    }
+
     // MARK: - Counter colors (free color pickers)
 
     @AppStorage("crochet.rowColorHex")    var rowColorHex:    String = "#B5547D"
