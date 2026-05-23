@@ -213,7 +213,7 @@ struct PatternLibraryView: View {
             VStack(spacing: 6) {
                 Text("No Yarn Yet")
                     .font(.headline).foregroundColor(.textSecondary)
-                Text("Track your stash here.\nTap + to add a skein.")
+                Text("Track your stash here.\nClick + to add a skein.")
                     .font(.callout).foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
             }
