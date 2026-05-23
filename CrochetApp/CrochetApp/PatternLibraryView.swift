@@ -15,6 +15,11 @@ struct PatternLibraryView: View {
     @State private var showAddYarn = false
     @State private var showAddTag = false
     @State private var tagTargetID: UUID? = nil
+    @State private var renameTarget: PatternEntry? = nil
+    @State private var renameText: String = ""
+    @State private var sidebarTab: SidebarTab = .patterns
+
+    enum SidebarTab: String, CaseIterable { case patterns = "Patterns", yarn = "Yarn" }
 
     private var accentColor: Color { settings.rowColor }
 
@@ -24,33 +29,11 @@ struct PatternLibraryView: View {
 
             Divider()
 
-            searchBar
+            tabPicker
 
-            if library.entries.isEmpty && searchText.isEmpty {
-                emptyState
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        let pinned = filteredEntries(from: library.pinned)
-                        let recent = filteredEntries(from: library.recent)
-
-                        if !pinned.isEmpty {
-                            sectionHeader("Pinned")
-                            ForEach(pinned) { entry in entryRow(entry) }
-                        }
-
-                        sectionHeader(searchText.isEmpty ? "Recent" : "Results")
-                        if recent.isEmpty {
-                            Text(searchText.isEmpty ? "No recent patterns" : "No matches")
-                                .font(.caption).foregroundColor(.secondary)
-                                .padding(.horizontal, 12).padding(.vertical, 8)
-                        } else {
-                            ForEach(recent) { entry in entryRow(entry) }
-                        }
-
-                        yarnStashSection
-                    }
-                }
+            switch sidebarTab {
+            case .patterns: patternsContent
+            case .yarn: yarnContent
             }
         }
         .fileImporter(
@@ -125,23 +108,84 @@ struct PatternLibraryView: View {
                 AddTagSheet(entry: entry, library: library)
             }
         }
+        .sheet(item: $renameTarget) { entry in
+            RenameSheet(entry: entry, text: $renameText, library: library)
+        }
     }
 
     // MARK: - Header
 
     private var header: some View {
         HStack {
-            Image(systemName: "doc.text").foregroundColor(accentColor)
-            Text("Patterns").font(.headline).fontWeight(.bold)
+            Image(systemName: sidebarTab == .yarn ? "tray.full" : "doc.text").foregroundColor(accentColor)
+            Text("Library").font(.headline).fontWeight(.bold)
             Spacer()
-            Button { showFilePicker = true } label: {
+            Button {
+                if sidebarTab == .yarn { showAddYarn = true } else { showFilePicker = true }
+            } label: {
                 Image(systemName: "plus").font(.system(size: 16, weight: .medium))
             }
-            .buttonStyle(.plain).foregroundColor(accentColor).help("Add a pattern file")
-            .accessibilityLabel("Add pattern")
+            .buttonStyle(.plain).foregroundColor(accentColor)
+            .help(sidebarTab == .yarn ? "Add yarn to stash" : "Add a pattern file")
+            .accessibilityLabel(sidebarTab == .yarn ? "Add yarn" : "Add pattern")
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(Color.surfaceRaised)
+    }
+
+    // MARK: - Tab picker
+
+    private var tabPicker: some View {
+        Picker("", selection: $sidebarTab) {
+            ForEach(SidebarTab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal, 10).padding(.vertical, 8)
+        .background(Color.surfaceRaised)
+        .overlay(alignment: .bottom) { Divider() }
+    }
+
+    // MARK: - Patterns content
+
+    private var patternsContent: some View {
+        VStack(spacing: 0) {
+            searchBar
+
+            if library.entries.isEmpty && searchText.isEmpty {
+                emptyState
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        let pinned = filteredEntries(from: library.pinned)
+                        let recent = filteredEntries(from: library.recent)
+
+                        if !pinned.isEmpty {
+                            sectionHeader("Pinned")
+                            ForEach(pinned) { entry in entryRow(entry) }
+                        }
+
+                        sectionHeader(searchText.isEmpty ? "Recent" : "Results")
+                        if recent.isEmpty {
+                            Text(searchText.isEmpty ? "No recent patterns" : "No matches")
+                                .font(.caption).foregroundColor(.secondary)
+                                .padding(.horizontal, 12).padding(.vertical, 8)
+                        } else {
+                            ForEach(recent) { entry in entryRow(entry) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Yarn content
+
+    private var yarnContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                yarnStashSection
+            }
+        }
     }
 
     // MARK: - Search bar
@@ -239,6 +283,10 @@ struct PatternLibraryView: View {
             .onTapGesture { selectEntry(id: entry.id) }
             .contextMenu {
                 Button(entry.isPinned ? "Unpin" : "Pin") { library.togglePin(entryID: entry.id) }
+                Button("Rename…") {
+                    renameText = entry.displayName
+                    renameTarget = entry
+                }
                 Divider()
                 Button("Add Tag…") {
                     tagTargetID = entry.id
@@ -432,6 +480,38 @@ struct AddTagSheet: View {
 
     private func save() {
         library.addTag(tagText, to: entry.id)
+        dismiss()
+    }
+}
+
+// MARK: - Rename Sheet
+
+struct RenameSheet: View {
+    let entry: PatternEntry
+    @Binding var text: String
+    @ObservedObject var library: PatternLibrary
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Rename Pattern").font(.headline)
+            TextField("Pattern name", text: $text)
+                .textFieldStyle(.roundedBorder).focused($focused).onSubmit { save() }
+            HStack {
+                Button("Cancel") { dismiss() }.buttonStyle(.bordered)
+                Spacer()
+                Button("Save") { save() }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .padding(20).frame(width: 300)
+        .onAppear { focused = true }
+    }
+
+    private func save() {
+        library.rename(entryID: entry.id, to: text)
         dismiss()
     }
 }

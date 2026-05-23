@@ -126,6 +126,14 @@ class PatternLibrary: ObservableObject {
         save()
     }
 
+    func rename(entryID: UUID, to newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
+        guard entries[i].displayName != trimmed else { return }
+        entries[i].displayName = trimmed
+        save()
+    }
+
     func togglePin(entryID: UUID) {
         guard let i = entries.firstIndex(where: { $0.id == entryID }) else { return }
         entries[i].isPinned.toggle()

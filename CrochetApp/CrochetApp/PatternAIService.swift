@@ -344,6 +344,12 @@ enum AIInsights {
             if fresh()?.aiSummary == nil,
                let r = try? await service.generateSummary(patternID: entryID, patternText: patternText) {
                 library.updateAICache(for: entryID, summary: r)
+                // Per product decision, always rename the library entry to the
+                // AI-extracted pattern name (skip empty / "unknown" results).
+                let name = r.patternName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !name.isEmpty, name.lowercased() != "unknown" {
+                    library.rename(entryID: entryID, to: name)
+                }
             }
             if fresh()?.aiAbbreviations == nil,
                let r = try? await service.generateAbbreviations(patternID: entryID, patternText: patternText) {
