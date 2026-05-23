@@ -12,7 +12,6 @@ struct ContentView: View {
     @State private var showAIPanel: Bool = UserDefaults.standard.aiPanelOpen
     @State private var aiPanelWidth: CGFloat = 280
     @State private var abbreviationDict: [String: String] = [:]
-    @State private var patternScrollToRow: Int = 0
     @State private var focusMode = false
 
     // Cached pattern text for the active entry. Loaded once when the entry changes
@@ -48,7 +47,6 @@ struct ContentView: View {
                     PatternContentView(
                         fileURL: activeFileURL,
                         library: library,
-                        scrollToRow: patternScrollToRow,
                         abbreviationDict: abbreviationDict
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -120,16 +118,12 @@ struct ContentView: View {
         }
         .onChange(of: library.activeEntryID) { _ in
             abbreviationDict = [:]
-            patternScrollToRow = 0
             reloadPatternText()
             // Kick off (or backfill) AI insight generation as soon as a pattern is
             // imported or opened. Idempotent + persisted, so this never re-bursts.
             if #available(macOS 26.0, *), let id = library.activeEntryID {
                 AIInsights.ensure(for: id, in: library)
             }
-        }
-        .onChange(of: store.rowCount) { row in
-            patternScrollToRow = row
         }
         .onAppear {
             NSApp.mainWindow?.title = library.activeEntry?.displayName ?? "Crochet Helper"

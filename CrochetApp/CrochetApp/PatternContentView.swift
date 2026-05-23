@@ -6,21 +6,18 @@ import UniformTypeIdentifiers
 struct PatternContentView: View {
     let fileURL: URL?
     @ObservedObject var library: PatternLibrary
-    var scrollToRow: Int = 0
     var abbreviationDict: [String: String] = [:]
 
     var body: some View {
         Group {
             if let url = fileURL {
                 if url.pathExtension.lowercased() == "pdf" {
-                    PDFKitView(url: url, scrollToRow: scrollToRow)
+                    PDFKitView(url: url)
                 } else {
-                    MarkdownView(fileURL: url, library: library,
-                                 scrollToRow: scrollToRow, abbreviationDict: abbreviationDict)
+                    MarkdownView(fileURL: url, library: library, abbreviationDict: abbreviationDict)
                 }
             } else {
-                MarkdownView(fileURL: nil, library: library,
-                             scrollToRow: scrollToRow, abbreviationDict: abbreviationDict)
+                MarkdownView(fileURL: nil, library: library, abbreviationDict: abbreviationDict)
             }
         }
     }
@@ -30,7 +27,6 @@ struct PatternContentView: View {
 
 struct PDFKitView: NSViewRepresentable {
     let url: URL
-    var scrollToRow: Int = 0
 
     func makeNSView(context: Context) -> PDFView {
         let view = PDFView()
@@ -46,7 +42,7 @@ struct PDFKitView: NSViewRepresentable {
     }
 
     func updateNSView(_ pdfView: PDFView, context: Context) {
-        // Only reload document if URL changed, re-scoping security access.
+        // Only reload the document if the URL changed, re-scoping security access.
         if context.coordinator.loadedURL != url {
             if context.coordinator.accessing, let old = context.coordinator.loadedURL {
                 old.stopAccessingSecurityScopedResource()
@@ -54,32 +50,6 @@ struct PDFKitView: NSViewRepresentable {
             context.coordinator.accessing = url.startAccessingSecurityScopedResource()
             pdfView.document = PDFDocument(url: url)
             context.coordinator.loadedURL = url
-            context.coordinator.lastScrollRow = 0
-            context.coordinator.lastSelectionPage = nil
-        }
-
-        // Scroll to row if changed
-        if scrollToRow != context.coordinator.lastScrollRow, scrollToRow > 0,
-           let doc = pdfView.document {
-            context.coordinator.lastScrollRow = scrollToRow
-            let terms = ["Row \(scrollToRow)", "Rnd \(scrollToRow)", "Round \(scrollToRow)"]
-            // Multi-part patterns repeat the same "Rnd N" per part, so pick the match
-            // on the page CLOSEST to where we last scrolled rather than always the first.
-            let matches = terms.flatMap { doc.findString($0, withOptions: .caseInsensitive) }
-            func page(of sel: PDFSelection) -> Int? { sel.pages.first.map { doc.index(for: $0) } }
-            let chosen: PDFSelection?
-            if let last = context.coordinator.lastSelectionPage {
-                chosen = matches.min { a, b in
-                    abs((page(of: a) ?? 0) - last) < abs((page(of: b) ?? 0) - last)
-                }
-            } else {
-                chosen = matches.first
-            }
-            if let sel = chosen {
-                pdfView.go(to: sel)
-                pdfView.setCurrentSelection(sel, animate: true)
-                context.coordinator.lastSelectionPage = page(of: sel)
-            }
         }
     }
 
@@ -95,7 +65,5 @@ struct PDFKitView: NSViewRepresentable {
         weak var pdfView: PDFView?
         var accessing = false
         var loadedURL: URL?
-        var lastScrollRow: Int = 0
-        var lastSelectionPage: Int? = nil
     }
 }

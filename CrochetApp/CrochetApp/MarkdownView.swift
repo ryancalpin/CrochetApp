@@ -1,67 +1,6 @@
 import SwiftUI
 import WebKit
 
-// MARK: - Row-follow selection
-//
-// Chooses which "Row/Rnd/Round N" element to scroll to in a multi-part pattern,
-// where the same number appears once per part. Pure + testable.
-enum RowFollow {
-    // Exact: "Row/Rnd/Round 8". Range: "Rnds 5–7" / "Rows 5-7" (hyphen, en-dash, em-dash).
-    private static let exactRE = try? NSRegularExpression(
-        pattern: "\\b(?:Row|Rnd|Round)s?\\s+(\\d+)\\b", options: [.caseInsensitive])
-    private static let rangeRE = try? NSRegularExpression(
-        pattern: "\\b(?:Row|Rnd|Round)s?\\s+(\\d+)\\s*[-–—]\\s*(\\d+)", options: [.caseInsensitive])
-
-    /// Does this element's text refer to `row` — either as an exact "Rnd N" or within a
-    /// range like "Rnds 5–7"?
-    static func matches(_ text: String, row: Int) -> Bool {
-        let full = NSRange(text.startIndex..., in: text)
-        // Ranges first (a range like "Rnds 5–7" also contains a leading number that the
-        // exact pattern would catch, but range membership is the correct interpretation).
-        if let rangeRE {
-            for m in rangeRE.matches(in: text, range: full) {
-                if let s = intCapture(m, 1, in: text), let e = intCapture(m, 2, in: text),
-                   min(s, e) <= row, row <= max(s, e) {
-                    return true
-                }
-            }
-        }
-        if let exactRE {
-            for m in exactRE.matches(in: text, range: full) {
-                if intCapture(m, 1, in: text) == row { return true }
-            }
-        }
-        return false
-    }
-
-    private static func intCapture(_ m: NSTextCheckingResult, _ i: Int, in text: String) -> Int? {
-        guard let r = Range(m.range(at: i), in: text) else { return nil }
-        return Int(text[r])
-    }
-
-    /// Indices of elements that refer to `row` (exact or via a range).
-    static func matchingIndices(in texts: [String], row: Int) -> [Int] {
-        guard row > 0 else { return [] }
-        return texts.indices.filter { matches(texts[$0], row: row) }
-    }
-
-    /// Picks which matching element to scroll to, biased toward forward progress:
-    /// 1. If the current element (anchor) still refers to this row — e.g. counting 8,9,10
-    ///    while sitting on a "Rnds 7–12" range block — stay put (don't jump to a later
-    ///    part that happens to share those numbers).
-    /// 2. Otherwise the first match AFTER the anchor — so resetting to 1 for a new part
-    ///    advances into that part instead of snapping back to part 1.
-    /// 3. Otherwise the last match at/before the anchor (stepping back, or the last part).
-    /// Returns nil when the row number appears nowhere.
-    static func targetIndex(in texts: [String], row: Int, anchor: Int) -> Int? {
-        let matches = matchingIndices(in: texts, row: row)
-        guard !matches.isEmpty else { return nil }
-        if anchor >= 0, matches.contains(anchor) { return anchor }
-        if let forward = matches.first(where: { $0 > anchor }) { return forward }
-        return matches.last
-    }
-}
-
 // MARK: - Simple Markdown to HTML Converter
 struct MarkdownConverter {
     static func convert(_ markdown: String) -> String {
@@ -389,7 +328,6 @@ struct MarkdownWebView: NSViewRepresentable {
     let htmlContent: String
     let annotations: [String: String]
     let bridge: AnnotationBridge
-    var scrollToRow: Int = 0
     var abbreviationDict: [String: String] = [:]
 
     func makeNSView(context: Context) -> WKWebView {
@@ -408,42 +346,8 @@ struct MarkdownWebView: NSViewRepresentable {
         if htmlContent != context.coordinator.lastLoadedHTML {
             context.coordinator.lastLoadedHTML = htmlContent
             context.coordinator.lastAbbreviationDict = [:]
-            context.coordinator.lastRowIndex = -1
-            context.coordinator.lastScrollRow = 0
-            context.coordinator.elementTexts = []
             webView.loadHTMLString(htmlContent, baseURL: nil)
             return
-        }
-
-        if scrollToRow != context.coordinator.lastScrollRow, scrollToRow > 0 {
-            context.coordinator.lastScrollRow = scrollToRow
-            let coordinator = context.coordinator
-            // Anchor = index of the row element we last scrolled to, held in the
-            // Coordinator for this session only (no cross-launch persistence — a saved
-            // position from a prior session would mis-send a fresh count into the middle
-            // of the pattern). Each session starts at -1 → the first count lands on
-            // part 1; selection is forward-biased so resetting to 1 for a new part
-            // advances into that part.
-            let anchor = coordinator.lastRowIndex
-            let targetRow = scrollToRow
-
-            func scroll(using texts: [String]) {
-                guard let idx = RowFollow.targetIndex(in: texts, row: targetRow, anchor: anchor) else { return }
-                coordinator.lastRowIndex = idx
-                let js = "var __e=document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6')[\(idx)]; if(__e){__e.scrollIntoView({behavior:'smooth',block:'start'});}"
-                webView.evaluateJavaScript(js, completionHandler: nil)
-            }
-
-            if !coordinator.elementTexts.isEmpty {
-                scroll(using: coordinator.elementTexts)
-            } else {
-                // Texts not cached yet (first scroll right after load) — fetch then scroll.
-                webView.evaluateJavaScript(Coordinator.elementTextsJS) { result, _ in
-                    let texts = result as? [String] ?? []
-                    coordinator.elementTexts = texts
-                    scroll(using: texts)
-                }
-            }
         }
 
         if !abbreviationDict.isEmpty, abbreviationDict != context.coordinator.lastAbbreviationDict {
@@ -460,16 +364,7 @@ struct MarkdownWebView: NSViewRepresentable {
         var pendingAnnotations: [String: String]
         var pendingAbbreviationDict: [String: String] = [:]
         var lastLoadedHTML: String = ""
-        var lastScrollRow: Int = 0
         var lastAbbreviationDict: [String: String] = [:]
-        /// Document-order index of the last row element we scrolled to. Lives in the
-        /// Coordinator (survives page reloads / view re-renders), seeded from
-        /// UserDefaults for cross-launch. -1 = not yet established.
-        var lastRowIndex: Int = -1
-        /// Cached textContent of every p/li/heading element, in document order — used
-        /// for Swift-side row matching. Refreshed on each page load.
-        var elementTexts: [String] = []
-        static let elementTextsJS = "Array.from(document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6')).map(function(e){return e.textContent})"
 
         init(annotations: [String: String]) {
             self.pendingAnnotations = annotations
@@ -477,10 +372,6 @@ struct MarkdownWebView: NSViewRepresentable {
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             injectAnnotationJS(into: webView, annotations: pendingAnnotations)
-            // Cache the row-element texts for Swift-side row matching.
-            webView.evaluateJavaScript(Coordinator.elementTextsJS) { [weak self] result, _ in
-                if let arr = result as? [String] { self?.elementTexts = arr }
-            }
             if !pendingAbbreviationDict.isEmpty {
                 lastAbbreviationDict = pendingAbbreviationDict
                 injectAbbreviationTooltips(into: webView, dict: pendingAbbreviationDict)
@@ -699,7 +590,6 @@ struct MarkdownWebView: NSViewRepresentable {
 struct MarkdownView: View {
     let fileURL: URL?
     @ObservedObject var library: PatternLibrary
-    var scrollToRow: Int = 0
     var abbreviationDict: [String: String] = [:]
 
     @ObservedObject private var settings = AppSettings.shared
@@ -710,10 +600,9 @@ struct MarkdownView: View {
 
     private let bridge: AnnotationBridge
 
-    init(fileURL: URL?, library: PatternLibrary, scrollToRow: Int = 0, abbreviationDict: [String: String] = [:]) {
+    init(fileURL: URL?, library: PatternLibrary, abbreviationDict: [String: String] = [:]) {
         self.fileURL = fileURL
         self.library = library
-        self.scrollToRow = scrollToRow
         self.abbreviationDict = abbreviationDict
         self.bridge = AnnotationBridge(library: library)
     }
@@ -744,7 +633,6 @@ struct MarkdownView: View {
                     htmlContent: htmlContent,
                     annotations: (library.activeEntry?.annotations ?? [:]),
                     bridge: bridge,
-                    scrollToRow: scrollToRow,
                     abbreviationDict: abbreviationDict
                 )
             }
