@@ -1,0 +1,34 @@
+{
+  "identifier" : "B1A7C2E0-1000-4000-9000-LOOPLETPRO01",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "C2B8D3F1-2000-4000-9000-LOOPLETPRO02",
+      "localizations" : [
+        {
+          "description" : "Unlock AI insights, iCloud sync, unlimited patterns, and all themes.",
+          "displayName" : "Looplet Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.ryancalpin.Looplet.pro",
+      "referenceName" : "Looplet Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "LoopletLocal",
+    "_developerTeamID" : "X6PM238Q98",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

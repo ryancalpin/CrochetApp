@@ -1,0 +1,579 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */; };
+		AA000001000000000000001A /* LoopletApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000001B /* LoopletApp.swift */; };
+		AA000001000000000000002A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000002B /* ContentView.swift */; };
+		AA000001000000000000004A /* MarkdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000004B /* MarkdownView.swift */; };
+		AA000001000000000000005A /* CounterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000005B /* CounterStore.swift */; };
+		AA000001000000000000006A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000006B /* Assets.xcassets */; };
+		BB1234567890ABCDEF654321 /* PatternEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1234567890ABCDEF123456 /* PatternEntry.swift */; };
+		CC9876543210FEDCBA654321 /* PatternLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9876543210FEDCBA123456 /* PatternLibrary.swift */; };
+		CS1111111111111111111111 /* CloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = CS2222222222222222222222 /* CloudSync.swift */; };
+		DD1111111111111111111111 /* PatternLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2222222222222222222222 /* PatternLibraryView.swift */; };
+		DS1111111111111111111111 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS2222222222222222222222 /* Theme.swift */; };
+		DS3333333333333333333333 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS4444444444444444444444 /* Typography.swift */; };
+		DSCP11111111111111111111 /* CounterPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSCP22222222222222222222 /* CounterPill.swift */; };
+		DSHU11111111111111111111 /* GlassHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSHU22222222222222222222 /* GlassHUD.swift */; };
+		DSSC11111111111111111111 /* SectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSSC22222222222222222222 /* SectionCard.swift */; };
+		EE3333333333333333333333 /* CounterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4444444444444444444444 /* CounterBarView.swift */; };
+		FF5555555555555555555555 /* SessionTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6666666666666666666666 /* SessionTimer.swift */; };
+		GG7777777777777777777777 /* AnnotationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG8888888888888888888888 /* AnnotationBridge.swift */; };
+		HH1111111111111111111111 /* UserDefaults+Looplet.swift in Sources */ = {isa = PBXBuildFile; fileRef = HH2222222222222222222222 /* UserDefaults+Looplet.swift */; };
+		II3333333333333333333333 /* PatternAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = II4444444444444444444444 /* PatternAIService.swift */; };
+		KK7777777777777777777777 /* PatternQAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = KK8888888888888888888888 /* PatternQAView.swift */; };
+		LL9999999999999999999999 /* AIPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */; };
+		MM1111111111111111111111 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = MM2222222222222222222222 /* AppSettings.swift */; };
+		NN3333333333333333333333 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NN4444444444444444444444 /* SettingsView.swift */; };
+		OO5555555555555555555555 /* PatternContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OO6666666666666666666666 /* PatternContentView.swift */; };
+		PE1111111111111111111111 /* PatternExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = PE2222222222222222222222 /* PatternExporter.swift */; };
+		MO1111111111111111111111 /* Monetization.swift in Sources */ = {isa = PBXBuildFile; fileRef = MO2222222222222222222222 /* Monetization.swift */; };
+		OB1111111111111111111111 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OB2222222222222222222222 /* OnboardingView.swift */; };
+		TST0000000000000000000101 /* PatternAIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000201 /* PatternAIServiceTests.swift */; };
+		TST0000000000000000000102 /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000202 /* AppSettingsTests.swift */; };
+		TST0000000000000000000103 /* PatternEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000203 /* PatternEntryTests.swift */; };
+		TST0000000000000000000104 /* PatternExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000204 /* PatternExporterTests.swift */; };
+		TST0000000000000000000105 /* CounterStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000205 /* CounterStoreTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		TST0000000000000000000B00 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000010000000000000130 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA00000100000000000000FB;
+			remoteInfo = Looplet;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
+		AA000001000000000000001B /* LoopletApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopletApp.swift; sourceTree = "<group>"; };
+		AA000001000000000000002B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA000001000000000000004B /* MarkdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownView.swift; sourceTree = "<group>"; };
+		AA000001000000000000005B /* CounterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterStore.swift; sourceTree = "<group>"; };
+		AA000001000000000000006B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA000001000000000000007B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA000001000000000000008B /* Looplet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Looplet.entitlements; sourceTree = "<group>"; };
+		AA00000100000000000000AB /* Looplet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Looplet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB1234567890ABCDEF123456 /* PatternEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternEntry.swift; sourceTree = "<group>"; };
+		CC9876543210FEDCBA123456 /* PatternLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternLibrary.swift; sourceTree = "<group>"; };
+		CS2222222222222222222222 /* CloudSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudSync.swift; sourceTree = "<group>"; };
+		DD2222222222222222222222 /* PatternLibraryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternLibraryView.swift; sourceTree = "<group>"; };
+		DS2222222222222222222222 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		DS4444444444444444444444 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		DSCP22222222222222222222 /* CounterPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPill.swift; sourceTree = "<group>"; };
+		DSHU22222222222222222222 /* GlassHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassHUD.swift; sourceTree = "<group>"; };
+		DSSC22222222222222222222 /* SectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionCard.swift; sourceTree = "<group>"; };
+		EE4444444444444444444444 /* CounterBarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CounterBarView.swift; sourceTree = "<group>"; };
+		FF6666666666666666666666 /* SessionTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTimer.swift; sourceTree = "<group>"; };
+		GG8888888888888888888888 /* AnnotationBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnotationBridge.swift; sourceTree = "<group>"; };
+		HH2222222222222222222222 /* UserDefaults+Looplet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDefaults+Looplet.swift"; sourceTree = "<group>"; };
+		II4444444444444444444444 /* PatternAIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternAIService.swift; sourceTree = "<group>"; };
+		KK8888888888888888888888 /* PatternQAView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternQAView.swift; sourceTree = "<group>"; };
+		LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIPanelView.swift; sourceTree = "<group>"; };
+		MM2222222222222222222222 /* AppSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		NN4444444444444444444444 /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		OO6666666666666666666666 /* PatternContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternContentView.swift; sourceTree = "<group>"; };
+		PE2222222222222222222222 /* PatternExporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PatternExporter.swift; sourceTree = "<group>"; };
+		MO2222222222222222222222 /* Monetization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Monetization.swift; sourceTree = "<group>"; };
+		OB2222222222222222222222 /* OnboardingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		ST2222222222222222222222 /* Looplet.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Looplet.storekit; sourceTree = "<group>"; };
+		TST0000000000000000000201 /* PatternAIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternAIServiceTests.swift; sourceTree = "<group>"; };
+		TST0000000000000000000202 /* AppSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsTests.swift; sourceTree = "<group>"; };
+		TST0000000000000000000203 /* PatternEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternEntryTests.swift; sourceTree = "<group>"; };
+		TST0000000000000000000204 /* PatternExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternExporterTests.swift; sourceTree = "<group>"; };
+		TST0000000000000000000205 /* CounterStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterStoreTests.swift; sourceTree = "<group>"; };
+		TST0000000000000000000300 /* LoopletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LoopletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AA00000100000000000000BB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TST0000000000000000000400 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA00000100000000000000CB /* Looplet */ = {
+			isa = PBXGroup;
+			children = (
+				AA000001000000000000001B /* LoopletApp.swift */,
+				AA000001000000000000002B /* ContentView.swift */,
+				AA000001000000000000004B /* MarkdownView.swift */,
+				AA000001000000000000005B /* CounterStore.swift */,
+				BB1234567890ABCDEF123456 /* PatternEntry.swift */,
+				9D2A0A997E100A8B86D9AD6A /* ColorExtensions.swift */,
+				DS5555555555555555555555 /* DesignSystem */,
+				CC9876543210FEDCBA123456 /* PatternLibrary.swift */,
+				DD2222222222222222222222 /* PatternLibraryView.swift */,
+				EE4444444444444444444444 /* CounterBarView.swift */,
+				FF6666666666666666666666 /* SessionTimer.swift */,
+				GG8888888888888888888888 /* AnnotationBridge.swift */,
+				HH2222222222222222222222 /* UserDefaults+Looplet.swift */,
+				II4444444444444444444444 /* PatternAIService.swift */,
+				KK8888888888888888888888 /* PatternQAView.swift */,
+				LLAAAAAAAAAAAAAAAAAAAAAAA /* AIPanelView.swift */,
+				MM2222222222222222222222 /* AppSettings.swift */,
+				NN4444444444444444444444 /* SettingsView.swift */,
+				OO6666666666666666666666 /* PatternContentView.swift */,
+				PE2222222222222222222222 /* PatternExporter.swift */,
+				CS2222222222222222222222 /* CloudSync.swift */,
+				MO2222222222222222222222 /* Monetization.swift */,
+				OB2222222222222222222222 /* OnboardingView.swift */,
+				ST2222222222222222222222 /* Looplet.storekit */,
+				AA000001000000000000006B /* Assets.xcassets */,
+				AA000001000000000000007B /* Info.plist */,
+				AA000001000000000000008B /* Looplet.entitlements */,
+			);
+			path = Looplet;
+			sourceTree = "<group>";
+		};
+		AA00000100000000000000DB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000100000000000000AB /* Looplet.app */,
+				TST0000000000000000000300 /* LoopletTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA00000100000000000000EB = {
+			isa = PBXGroup;
+			children = (
+				AA00000100000000000000CB /* Looplet */,
+				TST0000000000000000000500 /* LoopletTests */,
+				AA00000100000000000000DB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DS5555555555555555555555 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				DS2222222222222222222222 /* Theme.swift */,
+				DS4444444444444444444444 /* Typography.swift */,
+				DSCP22222222222222222222 /* CounterPill.swift */,
+				DSHU22222222222222222222 /* GlassHUD.swift */,
+				DSSC22222222222222222222 /* SectionCard.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		TST0000000000000000000500 /* LoopletTests */ = {
+			isa = PBXGroup;
+			children = (
+				TST0000000000000000000201 /* PatternAIServiceTests.swift */,
+				TST0000000000000000000202 /* AppSettingsTests.swift */,
+				TST0000000000000000000203 /* PatternEntryTests.swift */,
+				TST0000000000000000000204 /* PatternExporterTests.swift */,
+				TST0000000000000000000205 /* CounterStoreTests.swift */,
+			);
+			path = LoopletTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AA00000100000000000000FB /* Looplet */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000010000000000000100 /* Build configuration list for PBXNativeTarget "Looplet" */;
+			buildPhases = (
+				AA0000010000000000000110 /* Sources */,
+				AA00000100000000000000BB /* Frameworks */,
+				AA0000010000000000000120 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Looplet;
+			productName = Looplet;
+			productReference = AA00000100000000000000AB /* Looplet.app */;
+			productType = "com.apple.product-type.application";
+		};
+		TST0000000000000000000600 /* LoopletTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = TST0000000000000000000900 /* Build configuration list for PBXNativeTarget "LoopletTests" */;
+			buildPhases = (
+				TST0000000000000000000700 /* Sources */,
+				TST0000000000000000000400 /* Frameworks */,
+				TST0000000000000000000800 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				TST0000000000000000000A00 /* PBXTargetDependency */,
+			);
+			name = LoopletTests;
+			productName = LoopletTests;
+			productReference = TST0000000000000000000300 /* LoopletTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA0000010000000000000130 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					AA00000100000000000000FB = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					TST0000000000000000000600 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = AA00000100000000000000FB;
+					};
+				};
+			};
+			buildConfigurationList = AA0000010000000000000140 /* Build configuration list for PBXProject "Looplet" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA00000100000000000000EB;
+			productRefGroup = AA00000100000000000000DB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA00000100000000000000FB /* Looplet */,
+				TST0000000000000000000600 /* LoopletTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA0000010000000000000120 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000006A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TST0000000000000000000800 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA0000010000000000000110 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000001A /* LoopletApp.swift in Sources */,
+				AA000001000000000000002A /* ContentView.swift in Sources */,
+				AA000001000000000000004A /* MarkdownView.swift in Sources */,
+				AA000001000000000000005A /* CounterStore.swift in Sources */,
+				BB1234567890ABCDEF654321 /* PatternEntry.swift in Sources */,
+				7FB548BC02AAC7BE5C102194 /* ColorExtensions.swift in Sources */,
+				DS1111111111111111111111 /* Theme.swift in Sources */,
+				DS3333333333333333333333 /* Typography.swift in Sources */,
+				DSCP11111111111111111111 /* CounterPill.swift in Sources */,
+				DSHU11111111111111111111 /* GlassHUD.swift in Sources */,
+				DSSC11111111111111111111 /* SectionCard.swift in Sources */,
+				CC9876543210FEDCBA654321 /* PatternLibrary.swift in Sources */,
+				DD1111111111111111111111 /* PatternLibraryView.swift in Sources */,
+				EE3333333333333333333333 /* CounterBarView.swift in Sources */,
+				FF5555555555555555555555 /* SessionTimer.swift in Sources */,
+				GG7777777777777777777777 /* AnnotationBridge.swift in Sources */,
+				HH1111111111111111111111 /* UserDefaults+Looplet.swift in Sources */,
+				II3333333333333333333333 /* PatternAIService.swift in Sources */,
+				KK7777777777777777777777 /* PatternQAView.swift in Sources */,
+				LL9999999999999999999999 /* AIPanelView.swift in Sources */,
+				MM1111111111111111111111 /* AppSettings.swift in Sources */,
+				NN3333333333333333333333 /* SettingsView.swift in Sources */,
+				OO5555555555555555555555 /* PatternContentView.swift in Sources */,
+				PE1111111111111111111111 /* PatternExporter.swift in Sources */,
+				CS1111111111111111111111 /* CloudSync.swift in Sources */,
+				MO1111111111111111111111 /* Monetization.swift in Sources */,
+				OB1111111111111111111111 /* OnboardingView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TST0000000000000000000700 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TST0000000000000000000101 /* PatternAIServiceTests.swift in Sources */,
+				TST0000000000000000000102 /* AppSettingsTests.swift in Sources */,
+				TST0000000000000000000103 /* PatternEntryTests.swift in Sources */,
+				TST0000000000000000000104 /* PatternExporterTests.swift in Sources */,
+				TST0000000000000000000105 /* CounterStoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		TST0000000000000000000A00 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA00000100000000000000FB /* Looplet */;
+			targetProxy = TST0000000000000000000B00 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AA0000010000000000000150 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AA0000010000000000000160 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		AA0000010000000000000170 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Looplet/Looplet.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X6PM238Q98;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Looplet/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ryancalpin.Looplet;
+				PRODUCT_NAME = Looplet;
+				PRODUCT_MODULE_NAME = Looplet;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AA0000010000000000000180 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Looplet/Looplet.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X6PM238Q98;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Looplet/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ryancalpin.Looplet;
+				PRODUCT_NAME = Looplet;
+				PRODUCT_MODULE_NAME = Looplet;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		TST0000000000000000000910 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ryancalpin.LoopletTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Looplet.app/Contents/MacOS/Looplet";
+			};
+			name = Debug;
+		};
+		TST0000000000000000000920 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ryancalpin.LoopletTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Looplet.app/Contents/MacOS/Looplet";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA0000010000000000000100 /* Build configuration list for PBXNativeTarget "Looplet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000010000000000000170 /* Debug */,
+				AA0000010000000000000180 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000010000000000000140 /* Build configuration list for PBXProject "Looplet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000010000000000000150 /* Debug */,
+				AA0000010000000000000160 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		TST0000000000000000000900 /* Build configuration list for PBXNativeTarget "LoopletTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				TST0000000000000000000910 /* Debug */,
+				TST0000000000000000000920 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AA0000010000000000000130 /* Project object */;
+}
