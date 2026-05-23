@@ -18,10 +18,14 @@ struct PatternLibraryView: View {
     @State private var renameTarget: PatternEntry? = nil
     @State private var renameText: String = ""
     @State private var sidebarTab: SidebarTab = .patterns
+    @State private var hoveredEntryID: UUID? = nil
+
+    @Environment(\.colorScheme) private var colorScheme
 
     enum SidebarTab: String, CaseIterable { case patterns = "Patterns", yarn = "Yarn" }
 
     private var accentColor: Color { settings.rowColor }
+    private var legibleAccent: Color { accentColor.legible(in: colorScheme) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -36,6 +40,7 @@ struct PatternLibraryView: View {
             case .yarn: yarnContent
             }
         }
+        .background(Color.surfaceSidebar)
         .fileImporter(
             isPresented: $showFilePicker,
             allowedContentTypes: [
@@ -78,16 +83,20 @@ struct PatternLibraryView: View {
             return true
         }
         .overlay(alignment: .center) {
-            if isDragTargeted {
+            if isDragTargeted && sidebarTab == .patterns {
                 RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(accentColor, style: StrokeStyle(lineWidth: 2, dash: [6]))
+                    .strokeBorder(legibleAccent, style: StrokeStyle(lineWidth: 2, dash: [6]))
                     .overlay(
-                        VStack(spacing: 8) {
-                            Image(systemName: "arrow.down.doc").font(.system(size: 28)).foregroundColor(accentColor)
-                            Text("Drop to add pattern").font(.callout).foregroundColor(accentColor)
+                        VStack(spacing: 12) {
+                            Image(systemName: "arrow.down.doc")
+                                .font(.system(size: 32))
+                                .foregroundColor(legibleAccent)
+                            Text("Drop to add pattern")
+                                .font(.callout)
+                                .foregroundColor(legibleAccent)
                         }
                     )
-                    .background(accentColor.opacity(0.05))
+                    .background(legibleAccent.opacity(0.05))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding(8)
             }
@@ -116,21 +125,22 @@ struct PatternLibraryView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack {
-            Image(systemName: sidebarTab == .yarn ? "tray.full" : "doc.text").foregroundColor(accentColor)
-            Text("Library").font(.headline).fontWeight(.bold)
+        HStack(spacing: 8) {
+            Image(systemName: sidebarTab == .yarn ? "tray.full" : "doc.text")
+                .foregroundColor(legibleAccent)
+            Text("Library").font(.system(.headline))
             Spacer()
             Button {
                 if sidebarTab == .yarn { showAddYarn = true } else { showFilePicker = true }
             } label: {
-                Image(systemName: "plus").font(.system(size: 16, weight: .medium))
+                Image(systemName: "plus").font(.system(.body, weight: .medium))
             }
-            .buttonStyle(.plain).foregroundColor(accentColor)
+            .buttonStyle(.plain).foregroundColor(legibleAccent)
             .help(sidebarTab == .yarn ? "Add yarn to stash" : "Add a pattern file")
             .accessibilityLabel(sidebarTab == .yarn ? "Add yarn" : "Add pattern")
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(Color.surfaceRaised)
+        .background(Color.surfaceSidebar)
     }
 
     // MARK: - Tab picker
@@ -141,7 +151,7 @@ struct PatternLibraryView: View {
         }
         .pickerStyle(.segmented)
         .padding(.horizontal, 10).padding(.vertical, 8)
-        .background(Color.surfaceRaised)
+        .background(Color.surfaceSidebar)
         .overlay(alignment: .bottom) { Divider() }
     }
 
@@ -155,7 +165,7 @@ struct PatternLibraryView: View {
                 emptyState
             } else {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 2) {
                         let pinned = filteredEntries(from: library.pinned)
                         let recent = filteredEntries(from: library.recent)
 
@@ -167,12 +177,13 @@ struct PatternLibraryView: View {
                         sectionHeader(searchText.isEmpty ? "Recent" : "Results")
                         if recent.isEmpty {
                             Text(searchText.isEmpty ? "No recent patterns" : "No matches")
-                                .font(.caption).foregroundColor(.secondary)
-                                .padding(.horizontal, 12).padding(.vertical, 8)
+                                .font(Typo.metadata).foregroundColor(.textSecondary)
+                                .padding(.horizontal, 16).padding(.vertical, 8)
                         } else {
                             ForEach(recent) { entry in entryRow(entry) }
                         }
                     }
+                    .padding(.vertical, 4)
                 }
             }
         }
@@ -180,31 +191,62 @@ struct PatternLibraryView: View {
 
     // MARK: - Yarn content
 
+    @ViewBuilder
     private var yarnContent: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                yarnStashSection
+        if library.yarnStash.isEmpty {
+            yarnEmptyState
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    yarnStashSection
+                }
+                .padding(.vertical, 4)
             }
         }
+    }
+
+    private var yarnEmptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "tray.full")
+                .font(.system(size: 36))
+                .foregroundColor(.textSecondary.opacity(0.4))
+            VStack(spacing: 6) {
+                Text("No Yarn Yet")
+                    .font(.headline).foregroundColor(.textSecondary)
+                Text("Track your stash here.\nTap + to add a skein.")
+                    .font(.callout).foregroundColor(.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            Button {
+                showAddYarn = true
+            } label: {
+                Label("Add Yarn", systemImage: "plus")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .padding(.top, 4)
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Search bar
 
     private var searchBar: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass").font(.system(size: 11)).foregroundColor(.secondary)
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass").font(.callout).foregroundColor(.textSecondary)
             TextField("Search patterns or tags…", text: $searchText)
-                .textFieldStyle(.plain).font(.system(size: 12))
+                .textFieldStyle(.plain).font(.callout)
             if !searchText.isEmpty {
                 Button { searchText = "" } label: {
-                    Image(systemName: "xmark.circle.fill").font(.system(size: 12)).foregroundColor(.secondary)
+                    Image(systemName: "xmark.circle.fill").font(.callout).foregroundColor(.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Clear search")
             }
         }
-        .padding(.horizontal, 10).padding(.vertical, 6)
-        .background(Color.surfaceRaised)
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(Color.surfaceSidebar)
         .overlay(alignment: .bottom) { Divider() }
     }
 
@@ -222,11 +264,18 @@ struct PatternLibraryView: View {
     // MARK: - Empty state
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "doc.text").font(.system(size: 40)).foregroundColor(accentColor.opacity(0.4))
-            Text("No Patterns Yet").font(.headline).foregroundColor(.secondary)
-            Text("Click + or drag a file here.\nSupports Markdown, PDF, and plain text.")
-                .font(.caption).foregroundColor(.secondary).multilineTextAlignment(.center).padding(.horizontal, 16)
+        VStack(spacing: 16) {
+            Image(systemName: "doc.text")
+                .font(.system(size: 36))
+                .foregroundColor(.textSecondary.opacity(0.4))
+            VStack(spacing: 6) {
+                Text("No Patterns Yet")
+                    .font(.headline).foregroundColor(.textSecondary)
+                Text("Click + or drag a file here.\nSupports Markdown, PDF, and plain text.")
+                    .font(.callout).foregroundColor(.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -235,51 +284,63 @@ struct PatternLibraryView: View {
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title.uppercased())
-            .font(.system(size: 10, weight: .semibold)).foregroundColor(.secondary)
-            .padding(.horizontal, 12).padding(.top, 8).padding(.bottom, 2)
+            .font(Typo.sectionLabel).foregroundColor(.textSecondary)
+            .tracking(0.6)
+            .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 4)
     }
 
     // MARK: - Entry row
 
     private func entryRow(_ entry: PatternEntry) -> some View {
         let isActive = library.activeEntryID == entry.id
-        return VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                Rectangle()
-                    .fill(isActive ? accentColor : Color.clear)
-                    .frame(width: 3)
+        let isHovered = hoveredEntryID == entry.id
+        let rowBackground: Color = {
+            if isActive { return legibleAccent.opacity(0.15) }
+            if isHovered { return Color.textSecondary.opacity(0.08) }
+            return .clear
+        }()
+        return HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "doc.text")
+                .font(.body)
+                .foregroundColor(isActive ? legibleAccent : .textSecondary)
+                .frame(width: 20)
+                .padding(.top, 1)
 
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(entry.displayName)
-                        .font(.system(size: 13, weight: isActive ? .semibold : .regular))
-                        .foregroundColor(.primary).lineLimit(1)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(entry.displayName)
+                    .font(Typo.rowTitle)
+                    .foregroundColor(.textPrimary)
+                    .lineLimit(1).truncationMode(.tail)
 
-                    HStack {
-                        Text(relativeDate(entry.lastOpened))
-                            .font(.system(size: 11)).foregroundColor(.secondary)
-                        Spacer()
-                        Text("R\(entry.rowCount) · S\(entry.stitchCount)")
-                            .font(.system(size: 11))
-                            .foregroundColor(isActive ? accentColor : .secondary)
-                            .padding(.horizontal, 6).padding(.vertical, 1)
-                            .background(isActive ? accentColor.opacity(0.12) : Color.surfaceRaised)
-                            .cornerRadius(8)
-                    }
+                HStack(spacing: 6) {
+                    Text(relativeDate(entry.lastOpened))
+                        .font(Typo.metadata).foregroundColor(.textSecondary)
+                    Spacer(minLength: 4)
+                    Text("R\(entry.rowCount) · S\(entry.stitchCount)")
+                        .font(Typo.metadata)
+                        .foregroundColor(isActive ? legibleAccent : .textSecondary)
+                        .padding(.horizontal, 6).padding(.vertical, 1)
+                        .background(isActive ? legibleAccent.opacity(0.15) : Color.surfaceRaised)
+                        .cornerRadius(6)
+                }
 
-                    if !entry.tags.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 4) {
-                                ForEach(entry.tags, id: \.self) { tag in
-                                    tagChip(tag, color: tagColor(tag))
-                                }
+                if !entry.tags.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 4) {
+                            ForEach(entry.tags, id: \.self) { tag in
+                                tagChip(tag, color: tagColor(tag))
                             }
                         }
                     }
                 }
-                .padding(.horizontal, 10).padding(.vertical, 8)
             }
-            .background(isActive ? accentColor.opacity(0.06) : Color.clear)
+        }
+            .padding(.horizontal, 10).padding(.vertical, 7)
+            .background(rowBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, 6)
             .contentShape(Rectangle())
+            .onHover { hovering in hoveredEntryID = hovering ? entry.id : (hoveredEntryID == entry.id ? nil : hoveredEntryID) }
             .onTapGesture { selectEntry(id: entry.id) }
             .contextMenu {
                 Button(entry.isPinned ? "Unpin" : "Pin") { library.togglePin(entryID: entry.id) }
@@ -305,15 +366,13 @@ struct PatternLibraryView: View {
                 Divider()
                 Button("Remove from Library", role: .destructive) { entryToRemove = entry }
             }
-            Divider().padding(.leading, 13)
-        }
     }
 
     private func tagChip(_ label: String, color: Color) -> some View {
         Text(label)
-            .font(.system(size: 9, weight: .bold))
+            .font(Typo.chip)
             .foregroundColor(color)
-            .padding(.horizontal, 5).padding(.vertical, 2)
+            .padding(.horizontal, 6).padding(.vertical, 2)
             .background(color.opacity(0.15))
             .clipShape(RoundedRectangle(cornerRadius: 4))
     }
@@ -321,40 +380,39 @@ struct PatternLibraryView: View {
     // MARK: - Yarn stash section
 
     private var yarnStashSection: some View {
-        VStack(spacing: 0) {
-            Divider()
+        VStack(spacing: 2) {
             Button {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { showYarnStash.toggle() }
             } label: {
-                HStack {
-                    Image(systemName: "tray.full").font(.system(size: 10)).foregroundColor(.secondary)
+                HStack(spacing: 6) {
+                    Image(systemName: "tray.full").font(.caption).foregroundColor(.textSecondary)
                     Text("YARN STASH")
-                        .font(.system(size: 10, weight: .semibold)).foregroundColor(.secondary)
-                        .tracking(0.8)
+                        .font(Typo.sectionLabel).foregroundColor(.textSecondary)
+                        .tracking(0.6)
                     Spacer()
-                    Text("\(library.yarnStash.count)").font(.system(size: 10)).foregroundColor(.secondary)
+                    Text("\(library.yarnStash.count)").font(Typo.metadata).foregroundColor(.textSecondary)
                     Image(systemName: showYarnStash ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 9)).foregroundColor(.secondary)
+                        .font(.caption).foregroundColor(.textSecondary)
                 }
-                .padding(.horizontal, 12).padding(.vertical, 7)
+                .padding(.horizontal, 16).padding(.vertical, 8)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             if showYarnStash {
-                VStack(spacing: 0) {
+                VStack(spacing: 2) {
                     ForEach(library.yarnStash) { yarn in
                         yarnRow(yarn)
                     }
                     Button {
                         showAddYarn = true
                     } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: "plus.circle").font(.system(size: 11))
-                            Text("Add yarn").font(.system(size: 11))
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus.circle").font(.callout)
+                            Text("Add yarn").font(.callout)
                         }
-                        .foregroundColor(accentColor)
-                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .foregroundColor(legibleAccent)
+                        .padding(.horizontal, 16).padding(.vertical, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
@@ -364,19 +422,21 @@ struct PatternLibraryView: View {
     }
 
     private func yarnRow(_ yarn: YarnEntry) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             Circle()
                 .fill(Color(hex: yarn.colorHex) ?? .gray)
-                .frame(width: 10, height: 10)
+                .frame(width: 14, height: 14)
                 .overlay(Circle().strokeBorder(.white.opacity(0.2), lineWidth: 0.5))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(yarn.name).font(.system(size: 11, weight: .medium)).lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(yarn.name).font(Typo.rowTitle).foregroundColor(.textPrimary).lineLimit(1)
                 Text("\(yarn.weight) · \(yarn.yardage) yds")
-                    .font(.system(size: 10)).foregroundColor(.secondary)
+                    .font(Typo.metadata).foregroundColor(.textSecondary)
             }
             Spacer()
         }
-        .padding(.horizontal, 12).padding(.vertical, 5)
+        .padding(.horizontal, 10).padding(.vertical, 7)
+        .padding(.horizontal, 6)
+        .contentShape(Rectangle())
         .contextMenu {
             Button("Remove", role: .destructive) { library.removeYarn(id: yarn.id) }
         }
