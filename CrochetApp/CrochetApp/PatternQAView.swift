@@ -26,16 +26,16 @@ struct PatternQAView: View {
                         ForEach(history) { pair in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(pair.question)
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundColor(.primary)
+                                    .font(Typo.bodyText.weight(.semibold))
+                                    .foregroundColor(.textPrimary)
                                 Text(pair.answer)
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.secondary)
+                                    .font(Typo.bodyText)
+                                    .foregroundColor(.textSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
-                            .padding(8)
-                            .background(Color.surfaceRaised)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .padding(10)
+                            .background(Color.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                     }
                     .padding(.bottom, 4)
@@ -49,13 +49,13 @@ struct PatternQAView: View {
                     .foregroundColor(.red)
             }
 
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 TextField("Ask anything about this pattern…", text: $question)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 11))
-                    .padding(6)
-                    .background(Color.surfaceRaised)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .font(Typo.bodyText)
+                    .padding(8)
+                    .background(Color.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                     .onSubmit { askQuestion() }
                     .disabled(isAsking)
 

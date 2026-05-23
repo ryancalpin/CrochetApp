@@ -704,21 +704,26 @@ struct MarkdownView: View {
 // MARK: - Empty State Placeholder
 struct EmptyMarkdownPlaceholder: View {
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 24) {
             Image(systemName: "doc.text")
-                .font(.system(size: 64))
-                .foregroundColor(.secondary.opacity(0.5))
+                .font(.system(size: 72))
+                .foregroundColor(.textSecondary.opacity(0.5))
+                .symbolRenderingMode(.hierarchical)
 
-            Text("No Pattern Open")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.secondary)
+            VStack(spacing: 8) {
+                Text("No Pattern Open")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textSecondary)
 
-            Text("Add a pattern from the sidebar — click the ＋ button or drag a Markdown, PDF, or text file in.")
-                .font(.callout)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+                Text("Add a pattern from the sidebar — click the ＋ button or drag a Markdown, PDF, or text file in.")
+                    .font(.callout)
+                    .foregroundColor(.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 48)
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.surface)
     }
 }

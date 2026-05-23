@@ -30,41 +30,36 @@ struct AIPanelView: View {
                     SectionCard(title: "Ask a Question", isLoading: false, onRegenerate: nil) {
                         PatternQAView(service: service, patternID: entry.id, patternText: patternText)
                     }
-                    Divider().padding(.horizontal, 12)
                     SectionCard(title: "Summary", isLoading: service.isLoadingSummary, onRegenerate: regenSummary) {
                         if let s = summary { summaryContent(s) }
                         else if let e = summaryError { errorText(e) }
                         else { loadingPlaceholder }
                     }
-                    Divider().padding(.horizontal, 12)
                     SectionCard(title: "Abbreviations", isLoading: service.isLoadingAbbreviations, onRegenerate: regenAbbreviations) {
                         if let a = abbreviationList { abbreviationsContent(a) }
                         else if let e = abbreviationsError { errorText(e) }
                         else { loadingPlaceholder }
                     }
-                    Divider().padding(.horizontal, 12)
                     SectionCard(title: "Materials", isLoading: service.isLoadingMaterials, onRegenerate: regenMaterials) {
                         if let m = materials { materialsContent(m) }
                         else if let e = materialsError { errorText(e) }
                         else { loadingPlaceholder }
                     }
-                    Divider().padding(.horizontal, 12)
                     SectionCard(title: "Difficulty", isLoading: service.isLoadingDifficulty, onRegenerate: regenDifficulty) {
-                        if let d = difficulty { Text(d).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true) }
+                        if let d = difficulty { Text(d).font(Typo.bodyText).foregroundColor(.textPrimary).fixedSize(horizontal: false, vertical: true) }
                         else if let e = difficultyError { errorText(e) }
                         else { loadingPlaceholder }
                     }
-                    Divider().padding(.horizontal, 12)
                     SectionCard(title: "Time Estimate", isLoading: service.isLoadingTimeEstimate, onRegenerate: regenTime) {
-                        if let t = timeEstimate { Text(t).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true) }
+                        if let t = timeEstimate { Text(t).font(Typo.bodyText).foregroundColor(.textPrimary).fixedSize(horizontal: false, vertical: true) }
                         else if let e = timeError { errorText(e) }
                         else { loadingPlaceholder }
                     }
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, 8)
             }
         }
-        .background(Color.surfaceRaised)
+        .background(Color.surface)
         .task(id: entry.id) {
             resetAll()
             await loadAll()
@@ -74,23 +69,27 @@ struct AIPanelView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack {
+        HStack(spacing: 8) {
             Image(systemName: "sparkles").foregroundColor(.purple)
-            Text("AI Assistant").font(.system(size: 13, weight: .semibold))
+            Text("AI Assistant").font(.system(.headline))
             Spacer()
             Button { showAIPanel = false } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.secondary).font(.system(size: 16))
+                    .foregroundColor(.textSecondary).font(.title3)
             }
             .buttonStyle(.plain).help("Close AI panel")
             .accessibilityLabel("Close AI panel")
         }
-        .padding(.horizontal, 12).padding(.vertical, 8)
+        .padding(.horizontal, 16).padding(.vertical, 12)
         .background(Color.surface)
     }
 
     private var loadingPlaceholder: some View {
-        ProgressView().scaleEffect(0.6).frame(maxWidth: .infinity, alignment: .leading)
+        HStack(spacing: 8) {
+            ProgressView().scaleEffect(0.6)
+            Text("Generating…").font(Typo.metadata).foregroundColor(.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Reset / load
@@ -172,7 +171,7 @@ struct AIPanelView: View {
     // MARK: - Content renderers
 
     private func summaryContent(_ s: PatternSummary) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
             labeledRow("Pattern", s.patternName)
             labeledRow("Level", s.skillLevel)
             labeledRow("Materials", s.materials)
@@ -183,27 +182,29 @@ struct AIPanelView: View {
     }
 
     private func abbreviationsContent(_ a: AbbreviationList) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             if a.convention != "US" && a.convention != "Unknown" {
                 Text("Using \(a.convention) convention")
-                    .font(.system(size: 10, weight: .semibold)).foregroundColor(.orange).padding(.bottom, 2)
+                    .font(Typo.metadata.weight(.semibold)).foregroundColor(.orange).padding(.bottom, 2)
             }
             ForEach(a.entries) { abbr in
-                HStack(alignment: .top, spacing: 4) {
-                    Text(abbr.abbreviation).font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    Text("—").font(.system(size: 11)).foregroundColor(.secondary)
-                    Text(abbr.meaning).font(.system(size: 11)).foregroundColor(.secondary)
+                HStack(alignment: .top, spacing: 6) {
+                    Text(abbr.abbreviation)
+                        .font(.system(.caption, design: .monospaced).weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                    Text("—").font(Typo.metadata).foregroundColor(.textSecondary)
+                    Text(abbr.meaning).font(Typo.bodyText).foregroundColor(.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             if a.entries.isEmpty {
-                Text("No abbreviations detected.").font(.system(size: 11)).foregroundColor(.secondary)
+                Text("No abbreviations detected.").font(Typo.bodyText).foregroundColor(.textSecondary)
             }
         }
     }
 
     private func materialsContent(_ m: MaterialsBreakdown) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
             labeledRow("Yarn", m.yarn)
             labeledRow("Hook", m.hook)
             labeledRow("Notions", m.notions)
@@ -211,16 +212,17 @@ struct AIPanelView: View {
     }
 
     private func labeledRow(_ label: String, _ value: String) -> some View {
-        HStack(alignment: .top, spacing: 4) {
+        HStack(alignment: .top, spacing: 8) {
             Text("\(label):")
-                .font(.system(size: 11, weight: .semibold)).foregroundColor(.secondary)
-                .frame(minWidth: 70, alignment: .trailing)
-            Text(value).font(.system(size: 11)).fixedSize(horizontal: false, vertical: true)
+                .font(Typo.metadata.weight(.semibold)).foregroundColor(.textSecondary)
+                .frame(minWidth: 72, alignment: .trailing)
+            Text(value).font(Typo.bodyText).foregroundColor(.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private func errorText(_ message: String) -> some View {
-        Text(message).font(.system(size: 11)).foregroundColor(.red)
+        Text(message).font(Typo.bodyText).foregroundColor(.red)
             .fixedSize(horizontal: false, vertical: true)
     }
 
