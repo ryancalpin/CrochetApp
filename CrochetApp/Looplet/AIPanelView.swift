@@ -172,12 +172,22 @@ struct AIPanelView: View {
 
     private func summaryContent(_ s: PatternSummary) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            labeledRow("Pattern", s.patternName)
-            labeledRow("Level", s.skillLevel)
-            labeledRow("Materials", s.materials)
-            labeledRow("Total Rows", s.totalRows)
-            labeledRow("Est. Time", s.estimatedTime)
-            labeledRow("Key Stitches", s.keyStitches)
+            summaryRow("Pattern", s.patternName)
+            summaryRow("Level", s.skillLevel)
+            summaryRow("Materials", s.materials)
+            summaryRow("Total Rows", s.totalRows)
+            summaryRow("Est. Time", s.estimatedTime)
+            summaryRow("Key Stitches", s.keyStitches)
+        }
+    }
+
+    /// Renders a summary row only when the value is meaningful — hides empty or
+    /// "Unknown" values rather than showing "Unknown".
+    @ViewBuilder
+    private func summaryRow(_ label: String, _ value: String) -> some View {
+        let v = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !v.isEmpty && v.lowercased() != "unknown" {
+            labeledRow(label, v)
         }
     }
 
@@ -205,9 +215,9 @@ struct AIPanelView: View {
 
     private func materialsContent(_ m: MaterialsBreakdown) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            labeledRow("Yarn", m.yarn)
-            labeledRow("Hook", m.hook)
-            labeledRow("Notions", m.notions)
+            summaryRow("Yarn", m.yarn)
+            summaryRow("Hook", m.hook)
+            summaryRow("Notions", m.notions)
         }
     }
 
