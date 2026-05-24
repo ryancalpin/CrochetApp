@@ -56,6 +56,15 @@ final class ProStore: ObservableObject {
     }
 
     func refreshEntitlement() async {
+        #if DEBUG
+        // Dev/screenshot only: force-unlock Pro when the off-by-default debug flag is set.
+        // Never compiled into Release builds, so it can't bypass the paywall in production.
+        if UserDefaults.standard.bool(forKey: "debug.forceProUnlock") {
+            isPro = true
+            UserDefaults.standard.set(true, forKey: Pro.cachedKey)
+            return
+        }
+        #endif
         var entitled = false
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,
@@ -151,6 +160,7 @@ struct AILockedPanel: View {
             Spacer()
         }
         .background(Color.surface)
+        .tint(Color.appAccent)
     }
 }
 
@@ -204,6 +214,7 @@ struct PaywallView: View {
         }
         .frame(width: 440, height: 520)
         .background(Color.surface)
+        .tint(Color.appAccent)
     }
 
     private var header: some View {
@@ -242,10 +253,12 @@ struct PaywallView: View {
 
             HStack {
                 Button("Restore Purchase") { Task { await store.restore(); if store.isPro { dismiss() } } }
-                    .buttonStyle(.link)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.appAccent)
                 Spacer()
                 Button("Maybe Later") { dismiss() }
-                    .buttonStyle(.link)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
             }
             .font(.callout)
         }

@@ -75,7 +75,8 @@ struct OnboardingView: View {
     private var controls: some View {
         HStack {
             Button("Skip") { finish() }
-                .buttonStyle(.link)
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.appAccent)
             Spacer()
             if index > 0 {
                 Button("Back") {
@@ -92,6 +93,9 @@ struct OnboardingView: View {
         }
         .padding(20)
         .background(Color.surfaceRaised)
+        // Tint buttons/links with the app's theme accent (otherwise borderedProminent
+        // and .link fall back to the system/asset accent — purple — off-theme).
+        .tint(Color.appAccent)
     }
 
     private func finish() {
