@@ -122,6 +122,28 @@ class PatternLibrary: ObservableObject {
         return entry.id
     }
 
+    /// Seed the bundled sample pattern. Writes the markdown into our own support directory
+    /// (a writable, always-accessible location) and imports it like a normal file. If the
+    /// sample is already in the library, returns the existing entry instead of duplicating.
+    @discardableResult
+    func addSamplePattern() -> UUID? {
+        let fm = FileManager.default
+        guard let support = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
+        let dir = support.appendingPathComponent("Looplet/Samples", isDirectory: true)
+        try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
+        let fileURL = dir.appendingPathComponent(SampleContent.fileName)
+
+        if !fm.fileExists(atPath: fileURL.path) {
+            guard (try? SampleContent.patternMarkdown.write(to: fileURL, atomically: true, encoding: .utf8)) != nil else {
+                return nil
+            }
+        }
+        if let existing = entries.first(where: { $0.resolveURL() == fileURL }) {
+            return existing.id
+        }
+        return add(url: fileURL)
+    }
+
     func select(entryID: UUID) {
         activeEntryID = entryID
     }

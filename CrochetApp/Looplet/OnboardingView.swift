@@ -11,18 +11,21 @@ struct OnboardingView: View {
         let icon: String
         let title: String
         let detail: String
+        /// First panel shows the real app icon instead of an SF Symbol tile.
+        var useAppIcon: Bool = false
     }
 
     private let panels: [Panel] = [
         .init(icon: "square.stack.3d.up.fill",
               title: "Welcome to Looplet",
-              detail: "Your crochet companion — keep your patterns, counts, and yarn stash in one calm place."),
+              detail: "Your crochet companion — keep your patterns, counts, and yarn stash in one calm place.",
+              useAppIcon: true),
         .init(icon: "arrow.down.doc.fill",
               title: "Bring in a Pattern",
-              detail: "Click the ＋ in the sidebar or drag a file in. Markdown, PDF, and plain text all work."),
+              detail: "Tap ＋ or drag a file in. Markdown, PDF, and plain text all work — or start with the built-in sample."),
         .init(icon: "number.circle.fill",
               title: "Count as You Stitch",
-              detail: "Tap the Row and Stitch pills, set goals, and use ↑ ↓ ← → or R/S keys to keep your hands on your hook."),
+              detail: "Tap the Row and Stitch pills, set goals, and keep a steady rhythm without losing your place."),
         .init(icon: "sparkles",
               title: "AI Insights",
               detail: "Looplet Pro reads your pattern for a summary, abbreviations, materials, and answers your questions.")
@@ -45,33 +48,61 @@ struct OnboardingView: View {
     }
 
     private func panelView(_ panel: Panel) -> some View {
-        VStack(spacing: 20) {
-            Image(systemName: panel.icon)
-                .font(.system(size: 64))
-                .foregroundColor(Color.appAccent)
-                .symbolRenderingMode(.hierarchical)
-            Text(panel.title)
-                .font(.title).fontWeight(.bold)
-                .multilineTextAlignment(.center)
-            Text(panel.detail)
-                .font(.title3)
-                .foregroundColor(.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 40)
+        VStack(spacing: 28) {
+            panelIcon(panel)
+            VStack(spacing: 12) {
+                Text(panel.title)
+                    .font(.largeTitle).fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                Text(panel.detail)
+                    .font(.title3)
+                    .foregroundColor(.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 36)
+            }
         }
         .padding(.horizontal, 24)
+    }
+
+    @ViewBuilder
+    private func panelIcon(_ panel: Panel) -> some View {
+        if panel.useAppIcon {
+            Image("BrandIcon")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(width: 104, height: 104)
+                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(.white.opacity(0.12), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.22), radius: 18, x: 0, y: 10)
+        } else {
+            ZStack {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color.appAccent.opacity(0.14))
+                    .frame(width: 104, height: 104)
+                Image(systemName: panel.icon)
+                    .font(.system(size: 46, weight: .semibold))
+                    .foregroundColor(Color.appAccent)
+                    .symbolRenderingMode(.hierarchical)
+            }
+        }
     }
 
     private var dots: some View {
         HStack(spacing: 8) {
             ForEach(panels.indices, id: \.self) { i in
-                Circle()
-                    .fill(i == index ? Color.appAccent : Color.textSecondary.opacity(0.3))
-                    .frame(width: 8, height: 8)
+                Capsule()
+                    .fill(i == index ? Color.appAccent : Color.textSecondary.opacity(0.25))
+                    .frame(width: i == index ? 22 : 8, height: 8)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: index)
             }
         }
-        .padding(.bottom, 16)
+        .padding(.bottom, 20)
     }
 
     private var controls: some View {

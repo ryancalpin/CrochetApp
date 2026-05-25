@@ -37,6 +37,7 @@
 		OB1111111111111111111111 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OB2222222222222222222222 /* OnboardingView.swift */; };
 		PLAT00000000000000000001 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLAT00000000000000000002 /* Platform.swift */; };
 		VE000000000000000000001A /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = VE000000000000000000001B /* ViewExtensions.swift */; };
+		5C000000000000000000001A /* SampleContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C000000000000000000001B /* SampleContent.swift */; };
 		TST0000000000000000000101 /* PatternAIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000201 /* PatternAIServiceTests.swift */; };
 		TST0000000000000000000102 /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000202 /* AppSettingsTests.swift */; };
 		TST0000000000000000000103 /* PatternEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TST0000000000000000000203 /* PatternEntryTests.swift */; };
@@ -88,6 +89,7 @@
 		OB2222222222222222222222 /* OnboardingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		PLAT00000000000000000002 /* Platform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
 		VE000000000000000000001B /* ViewExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
+		5C000000000000000000001B /* SampleContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SampleContent.swift; sourceTree = "<group>"; };
 		IOSP00000000000000000001 /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
 		IOSE00000000000000000001 /* Looplet-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Looplet-iOS.entitlements"; sourceTree = "<group>"; };
 		ST2222222222222222222222 /* Looplet.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Looplet.storekit; sourceTree = "<group>"; };
@@ -145,6 +147,7 @@
 				OB2222222222222222222222 /* OnboardingView.swift */,
 				PLAT00000000000000000002 /* Platform.swift */,
 				VE000000000000000000001B /* ViewExtensions.swift */,
+				5C000000000000000000001B /* SampleContent.swift */,
 				ST2222222222222222222222 /* Looplet.storekit */,
 				AA000001000000000000006B /* Assets.xcassets */,
 				AA000001000000000000007B /* Info.plist */,
@@ -325,6 +328,7 @@
 				OB1111111111111111111111 /* OnboardingView.swift in Sources */,
 				PLAT00000000000000000001 /* Platform.swift in Sources */,
 				VE000000000000000000001A /* ViewExtensions.swift in Sources */,
+				5C000000000000000000001A /* SampleContent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

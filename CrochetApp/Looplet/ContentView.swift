@@ -99,7 +99,7 @@ struct ContentView: View {
     #else
     private var rootLayout: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            PatternLibraryView(library: library, store: store)
+            PatternLibraryView(library: library, store: store, onOpenSettings: { showSettings = true })
                 .navigationTitle("Library")
                 .navigationBarTitleDisplayMode(.inline)
                 // Compact (iPhone): push the detail column as a standard navigation push.

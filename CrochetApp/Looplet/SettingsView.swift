@@ -6,6 +6,15 @@ struct SettingsView: View {
     @State private var showPaywall = false
     @Environment(\.dismiss) private var dismiss
 
+    /// Platform-appropriate gesture name for overriding per-pattern goals.
+    private static let perPatternGoalHint: String = {
+        #if os(macOS)
+        return "These are applied when adding a new pattern. You can override them per-pattern by right-clicking a counter."
+        #else
+        return "These are applied when adding a new pattern. You can override them per-pattern by touching and holding a counter."
+        #endif
+    }()
+
     // iOS only: which section is shown (replaces TabView, broken in sheets on iOS 26).
     #if os(iOS)
     @State private var settingsSection = 0
@@ -145,7 +154,7 @@ struct SettingsView: View {
                         .frame(width: 72)
                         .textFieldStyle(.roundedBorder)
                 }
-                Text("These are applied when adding a new pattern. You can override them per-pattern via right-click on a counter.")
+                Text(Self.perPatternGoalHint)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

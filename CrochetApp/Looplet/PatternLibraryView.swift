@@ -7,6 +7,11 @@ struct PatternLibraryView: View {
     @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var proStore = ProStore.shared
 
+    /// When provided, a Settings gear is shown in the Library header. iOS passes this so
+    /// Settings is reachable even on a fresh install with no pattern open; macOS leaves it
+    /// nil and relies on the app menu (⌘,).
+    var onOpenSettings: (() -> Void)? = nil
+
     @State private var showFilePicker = false
     @State private var entryToRemove: PatternEntry? = nil
     @State private var importError: String? = nil
@@ -35,6 +40,15 @@ struct PatternLibraryView: View {
 
     private var accentColor: Color { Color.appAccent }
     private var legibleAccent: Color { Color.appAccent }
+
+    /// Platform-appropriate hint for the empty yarn stash ("Tap" on touch, "Click" on Mac).
+    private static let addSkeinHint: String = {
+        #if os(macOS)
+        return "Track your stash here.\nClick + to add a skein."
+        #else
+        return "Track your stash here.\nTap ＋ to add a skein."
+        #endif
+    }()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -145,6 +159,16 @@ struct PatternLibraryView: View {
                 .foregroundColor(legibleAccent)
             Text("Library").font(.system(.headline))
             Spacer()
+            if let onOpenSettings {
+                Button {
+                    onOpenSettings()
+                } label: {
+                    Image(systemName: "gearshape").font(.system(.body, weight: .medium))
+                }
+                .buttonStyle(.plain).foregroundColor(legibleAccent)
+                .help("Settings")
+                .accessibilityLabel("Settings")
+            }
             Button {
                 if sidebarTab == .yarn { showAddYarn = true }
                 else if canImport { showFilePicker = true }
@@ -246,7 +270,7 @@ struct PatternLibraryView: View {
             VStack(spacing: 6) {
                 Text("No Yarn Yet")
                     .font(.headline).foregroundColor(.textSecondary)
-                Text("Track your stash here.\nClick + to add a skein.")
+                Text(Self.addSkeinHint)
                     .font(.callout).foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
             }
@@ -304,11 +328,32 @@ struct PatternLibraryView: View {
             VStack(spacing: 6) {
                 Text("No Patterns Yet")
                     .font(.headline).foregroundColor(.textSecondary)
-                Text("Click + or drag a file here.\nSupports Markdown, PDF, and plain text.")
+                Text("Tap ＋ or drag a file here.\nSupports Markdown, PDF, and plain text.")
                     .font(.callout).foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 24)
+
+            VStack(spacing: 8) {
+                Button {
+                    if let id = library.addSamplePattern() { selectEntry(id: id) }
+                } label: {
+                    Label("Try a Sample Pattern", systemImage: "sparkles")
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+                .tint(legibleAccent)
+
+                Button {
+                    if canImport { showFilePicker = true } else { showPaywall = true }
+                } label: {
+                    Label("Import a File", systemImage: "arrow.down.doc")
+                }
+                .buttonStyle(.plain)
+                .font(.callout)
+                .foregroundColor(legibleAccent)
+            }
+            .padding(.top, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -585,6 +630,10 @@ struct AddTagSheet: View {
         .padding(20)
         #if os(macOS)
         .frame(width: 300)
+        #else
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
         #endif
         .onAppear { focused = true }
     }
@@ -620,6 +669,10 @@ struct RenameSheet: View {
         .padding(20)
         #if os(macOS)
         .frame(width: 300)
+        #else
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
         #endif
         .onAppear { focused = true }
     }
@@ -655,9 +708,47 @@ struct AddYarnSheet: View {
         _yardage = State(initialValue: editing.map { $0.yardage > 0 ? "\($0.yardage)" : "" } ?? "")
     }
 
+    private var title: String { editing == nil ? "Add to Yarn Stash" : "Edit Yarn" }
+    private var saveLabel: String { editing == nil ? "Add" : "Save" }
+    private var canSave: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
+
     var body: some View {
+        #if os(iOS)
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Yarn name", text: $name)
+                        .focused($focused)
+                    Picker("Weight", selection: $weight) {
+                        ForEach(weights, id: \.self) { Text($0).tag($0) }
+                    }
+                    ColorPicker("Color", selection: $color, supportsOpacity: false)
+                }
+                Section {
+                    TextField("Yardage (optional)", text: $yardage)
+                        .keyboardType(.numberPad)
+                } footer: {
+                    Text("Optional — total length of the skein, in yards.")
+                }
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(saveLabel) { save() }.bold().disabled(!canSave)
+                }
+            }
+            .tint(Color.appAccent)
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .onAppear { focused = true }
+        #else
         VStack(alignment: .leading, spacing: 12) {
-            Text(editing == nil ? "Add to Yarn Stash" : "Edit Yarn").font(.headline)
+            Text(title).font(.headline)
             TextField("Yarn name", text: $name).textFieldStyle(.roundedBorder).focused($focused)
             Picker("Weight", selection: $weight) {
                 ForEach(weights, id: \.self) { Text($0).tag($0) }
@@ -667,16 +758,15 @@ struct AddYarnSheet: View {
             HStack {
                 Button("Cancel") { dismiss() }.buttonStyle(.bordered)
                 Spacer()
-                Button(editing == nil ? "Add" : "Save") { save() }
+                Button(saveLabel) { save() }
                     .buttonStyle(.borderedProminent)
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(!canSave)
             }
         }
         .padding(20)
-        #if os(macOS)
         .frame(width: 320)
-        #endif
         .onAppear { focused = true }
+        #endif
     }
 
     private func save() {
