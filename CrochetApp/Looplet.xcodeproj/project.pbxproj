@@ -20,7 +20,6 @@
 		DS1111111111111111111111 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS2222222222222222222222 /* Theme.swift */; };
 		DS3333333333333333333333 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS4444444444444444444444 /* Typography.swift */; };
 		DSCP11111111111111111111 /* CounterPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSCP22222222222222222222 /* CounterPill.swift */; };
-		DSHU11111111111111111111 /* GlassHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSHU22222222222222222222 /* GlassHUD.swift */; };
 		DSSC11111111111111111111 /* SectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSSC22222222222222222222 /* SectionCard.swift */; };
 		EE3333333333333333333333 /* CounterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4444444444444444444444 /* CounterBarView.swift */; };
 		FF5555555555555555555555 /* SessionTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6666666666666666666666 /* SessionTimer.swift */; };
@@ -72,7 +71,6 @@
 		DS2222222222222222222222 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		DS4444444444444444444444 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		DSCP22222222222222222222 /* CounterPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPill.swift; sourceTree = "<group>"; };
-		DSHU22222222222222222222 /* GlassHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassHUD.swift; sourceTree = "<group>"; };
 		DSSC22222222222222222222 /* SectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionCard.swift; sourceTree = "<group>"; };
 		EE4444444444444444444444 /* CounterBarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CounterBarView.swift; sourceTree = "<group>"; };
 		FF6666666666666666666666 /* SessionTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTimer.swift; sourceTree = "<group>"; };
@@ -182,7 +180,6 @@
 				DS2222222222222222222222 /* Theme.swift */,
 				DS4444444444444444444444 /* Typography.swift */,
 				DSCP22222222222222222222 /* CounterPill.swift */,
-				DSHU22222222222222222222 /* GlassHUD.swift */,
 				DSSC22222222222222222222 /* SectionCard.swift */,
 			);
 			path = DesignSystem;
@@ -308,7 +305,6 @@
 				DS1111111111111111111111 /* Theme.swift in Sources */,
 				DS3333333333333333333333 /* Typography.swift in Sources */,
 				DSCP11111111111111111111 /* CounterPill.swift in Sources */,
-				DSHU11111111111111111111 /* GlassHUD.swift in Sources */,
 				DSSC11111111111111111111 /* SectionCard.swift in Sources */,
 				CC9876543210FEDCBA654321 /* PatternLibrary.swift in Sources */,
 				DD1111111111111111111111 /* PatternLibraryView.swift in Sources */,
