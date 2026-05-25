@@ -17,9 +17,9 @@ User decision: implement **all 16 screens**, pixel-matched, with the richer onbo
 - Settings: icon+label section tabs (accent tile when active) + grouped cards.
 - Paywall: gradient lock hero tile, colored per-feature icon tiles, gradient CTA button.
 
-## Batches (sequential — shared files, so no parallel worktrees)
+## Batches (sequential — shared files, so no parallel worktrees) — ALL COMPLETE ✅
 
-- [ ] **B1 — Onboarding** (`OnboardingView.swift`): gradient + orbs, 112 icon glow/ring, panel tiles
+- [x] **B1 — Onboarding** (`OnboardingView.swift`): gradient + orbs, 112 icon glow/ring, panel tiles
       w/ glow, Back/Next/Get Started, capsule dots. Screens 1, 10, 11, 12.
 - [ ] **B2 — Library** (`PatternLibraryView.swift`): brand-icon header, pattern-row left-border active
       + R·S badge, empty-state doc tile, yarn swatch glow, search active state, add-yarn weight chips.

@@ -16,6 +16,25 @@ extension Color {
         self.init(red: r, green: g, blue: b)
     }
 
+    /// A copy nudged toward white (`amount` > 0) — used to build vivid gradients.
+    func lightened(by amount: CGFloat) -> Color { adjustingBrightness(by: amount) }
+    /// A copy nudged toward black — used to build vivid gradients.
+    func darkened(by amount: CGFloat) -> Color { adjustingBrightness(by: -amount) }
+
+    private func adjustingBrightness(by delta: CGFloat) -> Color {
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        #if canImport(UIKit)
+        guard UIColor(self).getHue(&h, saturation: &s, brightness: &b, alpha: &a) else { return self }
+        #elseif canImport(AppKit)
+        let ns = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor(self)
+        ns.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+        #else
+        return self
+        #endif
+        return Color(hue: Double(h), saturation: Double(s),
+                     brightness: Double(min(max(b + delta, 0), 1)), opacity: Double(a))
+    }
+
     /// Serialize the color to a CSS hex string like "#B5547D".
     /// Converts through sRGB; alpha is discarded.
     var hexString: String {

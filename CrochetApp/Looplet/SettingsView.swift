@@ -42,15 +42,9 @@ struct SettingsView: View {
             .frame(height: 56)
             .overlay(alignment: .bottom) { Divider() }
 
-            // ── Section picker ─────────────────────────────────────────────
-            Picker("Settings section", selection: $settingsSection) {
-                Image(systemName: "list.number").tag(0)
-                Image(systemName: "sparkles").tag(1)
-                Image(systemName: "paintbrush").tag(2)
-                Image(systemName: "info.circle").tag(3)
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, 16)
+            // ── Section picker (icon + label tabs, per the design) ─────────
+            sectionTabs
+            .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(Color(UIColor.systemGroupedBackground))
 
@@ -73,6 +67,50 @@ struct SettingsView: View {
         .sheet(isPresented: $showPaywall) { PaywallView() }
         #endif
     }
+
+    #if os(iOS)
+    private struct SectionTab { let icon: String; let label: String }
+    private var sectionList: [SectionTab] {
+        [
+            .init(icon: "list.number", label: "Counting"),
+            .init(icon: "sparkles", label: "Pace & AI"),
+            .init(icon: "paintbrush", label: "Appearance"),
+            .init(icon: "info.circle", label: "About"),
+        ]
+    }
+
+    /// Icon-over-label segmented tabs (accent tile when active), matching the design.
+    private var sectionTabs: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(sectionList.enumerated()), id: \.offset) { idx, tab in
+                let active = settingsSection == idx
+                Button {
+                    withAnimation(.easeInOut(duration: 0.15)) { settingsSection = idx }
+                } label: {
+                    VStack(spacing: 5) {
+                        Image(systemName: tab.icon).font(.system(size: 17))
+                        Text(tab.label)
+                            .font(.system(size: 10, weight: active ? .semibold : .regular))
+                            .lineLimit(1).minimumScaleFactor(0.85)
+                    }
+                    .foregroundColor(active ? Color.appAccent : .secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(
+                        active ? Color.appAccent.opacity(0.12) : Color.clear,
+                        in: RoundedRectangle(cornerRadius: 11, style: .continuous)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 11, style: .continuous)
+                            .strokeBorder(active ? Color.appAccent.opacity(0.25) : Color.clear, lineWidth: 1)
+                    )
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+    #endif
 
     // iOS 26 changed TabView rendering: the old `.tabItem` API gives height=0 content
     // when TabView is inside NavigationStack inside a Sheet. The new Tab {} API (iOS 18+)
@@ -217,24 +255,25 @@ struct SettingsView: View {
                             ZStack {
                                 Circle()
                                     .fill(theme.accentColor)
-                                    .frame(width: 28, height: 28)
+                                    .frame(width: 44, height: 44)
                                 if settings.appTheme == theme {
                                     Image(systemName: "checkmark")
-                                        .font(.system(size: 12, weight: .bold))
+                                        .font(.system(size: 17, weight: .bold))
                                         .foregroundColor(.white)
                                 } else if locked {
                                     Image(systemName: "lock.fill")
-                                        .font(.system(size: 10, weight: .bold))
+                                        .font(.system(size: 13, weight: .bold))
                                         .foregroundColor(.white)
                                 }
                             }
                             .opacity(locked ? 0.55 : 1)
-                            .overlay(
-                                Circle().strokeBorder(
-                                    Color.appAccent,
-                                    lineWidth: settings.appTheme == theme ? 3 : 0
-                                )
-                            )
+                            .overlay {
+                                if settings.appTheme == theme {
+                                    Circle()
+                                        .strokeBorder(theme.accentColor, lineWidth: 2.5)
+                                        .padding(-4)
+                                }
+                            }
                             Text(theme.label)
                                 .font(.caption)
                                 .foregroundColor(settings.appTheme == theme ? .primary : .secondary)
