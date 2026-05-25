@@ -100,7 +100,7 @@ struct ContentView: View {
     private var rootLayout: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             PatternLibraryView(library: library, store: store, onOpenSettings: { showSettings = true })
-                .navigationTitle("Library")
+                .navigationTitle("Looplet")
                 .navigationBarTitleDisplayMode(.inline)
                 // Compact (iPhone): push the detail column as a standard navigation push.
                 // navigationDestination IS respected in compact; columnVisibility is not.

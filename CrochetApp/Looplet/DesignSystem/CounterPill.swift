@@ -15,7 +15,7 @@ struct CounterPill: View {
         HStack(spacing: 0) {
             stepButton(systemName: "minus", enabled: value > 0, action: onDecrement)
                 .accessibilityLabel("Decrease \(label)")
-            Divider().frame(height: pillHeight)
+            Divider().frame(maxHeight: .infinity)
             VStack(spacing: 1) {
                 HStack(spacing: 3) {
                     Text(label).font(Typo.pillLabel).foregroundColor(color)
@@ -31,10 +31,12 @@ struct CounterPill: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(label)
             .accessibilityValue("\(value)")
-            Divider().frame(height: pillHeight)
+            Divider().frame(maxHeight: .infinity)
             stepButton(systemName: "plus", enabled: true, action: onIncrement)
                 .accessibilityLabel("Increase \(label)")
         }
+        .frame(minHeight: pillHeight)
+        .fixedSize(horizontal: false, vertical: true)
         .background(color.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 13, style: .continuous).strokeBorder(color.opacity(0.18), lineWidth: 1.5))
@@ -44,9 +46,11 @@ struct CounterPill: View {
         Button { action() } label: {
             Image(systemName: systemName)
                 .font(.system(size: 13, weight: .semibold))
-                .frame(width: pillHeight, height: pillHeight)
+                .frame(width: pillHeight)
+                .frame(maxHeight: .infinity)
                 .background(color.opacity(0.10))
                 .foregroundColor(enabled ? color : .secondary)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!enabled)

@@ -254,12 +254,14 @@ struct MarkdownConverter {
             }
           }
           * { box-sizing: border-box; margin: 0; padding: 0; }
+          html { background: var(--bg); }
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
             font-size: 16px;
             line-height: 1.65;
             color: var(--fg);
             background: var(--bg);
+            min-height: 100vh;
             padding: 32px 40px 72px 40px;
             max-width: 760px;
             margin: 0 auto;
@@ -673,12 +675,21 @@ struct MarkdownView: View {
     var abbreviationDict: [String: String] = [:]
 
     @ObservedObject private var settings = AppSettings.shared
+    @Environment(\.colorScheme) private var colorScheme
     @State private var markdownContent: String = ""
     @State private var htmlContent: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
 
     private let bridge: AnnotationBridge
+
+    /// Theme surface resolved for the current appearance. Painted behind the
+    /// transparent web view so no window-black shows through (e.g. the bottom
+    /// safe-area strip or any area the document body doesn't cover).
+    private var surfaceColor: Color {
+        let p = settings.appTheme.palette
+        return ThemeColor.color(colorScheme == .dark ? p.surfaceD : p.surfaceL)
+    }
 
     init(fileURL: URL?, library: PatternLibrary, abbreviationDict: [String: String] = [:]) {
         self.fileURL = fileURL
@@ -717,6 +728,8 @@ struct MarkdownView: View {
                 )
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background { surfaceColor.ignoresSafeArea() }
         .onChangeValue(of: fileURL) { newURL in
             loadFile(url: newURL)
         }
