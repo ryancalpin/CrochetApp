@@ -25,21 +25,27 @@ struct CounterBarView: View {
         GeometryReader { geo in
             let compact = geo.size.width < compactBreakpoint
             HStack(spacing: 12) {
-                rowPill
-                stitchPill
-                if entry?.showRepeatCounter == true {
-                    repeatPill
-                }
-
-                if !compact, let goal = entry?.rowGoal, goal > 0 {
-                    rowProgressBar(current: store.rowCount, goal: goal)
-                }
-
-                Spacer(minLength: 8)
-
                 if compact {
+                    // Center the counter pills, balancing the trailing ⋯ with an
+                    // equal-width leading spacer so they sit dead-center.
+                    Color.clear.frame(width: 36, height: 1)
+                    Spacer(minLength: 4)
+                    rowPill
+                    stitchPill
+                    if entry?.showRepeatCounter == true { repeatPill }
+                    Spacer(minLength: 4)
                     overflowMenu
                 } else {
+                    rowPill
+                    stitchPill
+                    if entry?.showRepeatCounter == true { repeatPill }
+
+                    if let goal = entry?.rowGoal, goal > 0 {
+                        rowProgressBar(current: store.rowCount, goal: goal)
+                    }
+
+                    Spacer(minLength: 8)
+
                     audioCueButton
                     if settings.showTimer {
                         Divider().frame(height: 28)
@@ -315,22 +321,45 @@ struct CounterBarView: View {
     private var overflowMenu: some View {
         Menu {
             Label(timer.displayString, systemImage: "timer")
-            Divider()
-            Button(timer.isRunning ? "Pause Timer" : "Resume Timer") { timer.togglePause() }
-            Button("Reset Timer") { timer.reset() }
-            Divider()
-            Button(settings.audioCueEnabled ? "Mute Counter Sounds" : "Enable Counter Sounds") { settings.audioCueEnabled.toggle() }
-            Divider()
-            Button("Enter Focus Mode") { NotificationCenter.default.post(name: .toggleFocusMode, object: nil) }
-            Button("Reset Counters…") { showResetConfirmation = true }
+
             if #available(iOS 26.0, macOS 26.0, *) {
                 Divider()
-                Button(showAIPanel ? "Close AI Panel" : "Open AI Panel") { showAIPanel.toggle() }
+                Button { showAIPanel.toggle() } label: {
+                    Label(showAIPanel ? "Close AI Panel" : "Open AI Panel", systemImage: "sparkles")
+                }
             }
+
+            Divider()
+            Button { timer.togglePause() } label: {
+                Label(timer.isRunning ? "Pause Timer" : "Resume Timer",
+                      systemImage: timer.isRunning ? "pause.circle" : "play.circle")
+            }
+            Button { timer.reset() } label: {
+                Label("Reset Timer", systemImage: "clock.arrow.circlepath")
+            }
+
+            Divider()
+            Button { settings.audioCueEnabled.toggle() } label: {
+                Label(settings.audioCueEnabled ? "Mute Counter Sounds" : "Enable Counter Sounds",
+                      systemImage: settings.audioCueEnabled ? "speaker.slash" : "speaker.wave.2")
+            }
+
+            Divider()
+            Button { NotificationCenter.default.post(name: .toggleFocusMode, object: nil) } label: {
+                Label("Enter Focus Mode", systemImage: "arrow.up.left.and.arrow.down.right")
+            }
+            Button { showResetConfirmation = true } label: {
+                Label("Reset Counters…", systemImage: "arrow.counterclockwise")
+            }
+
             if let e = entry {
                 Divider()
-                Button("Export Insights…") { PatternExporter.exportToFile(e) }
-                Button("Share…") { PatternExporter.share(e, from: nil) }
+                Button { PatternExporter.exportToFile(e) } label: {
+                    Label("Export Insights…", systemImage: "arrow.down.doc")
+                }
+                Button { PatternExporter.share(e, from: nil) } label: {
+                    Label("Share…", systemImage: "square.and.arrow.up")
+                }
             }
         } label: {
             Image(systemName: "ellipsis.circle")
